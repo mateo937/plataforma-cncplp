@@ -612,11 +612,12 @@
 
       <div class="campo-form">
         <label>Código de acceso</label>
-        <input type="text" placeholder="Ej. CNCPLP-4V7K2" id="input-codigo">
+        <input type="text" placeholder="Ej. CN-001" id="input-codigo">
         <div class="ayuda">Este código es personal e intransferible. Si no lo tiene, contacte con su Coordinador Sectorial.</div>
+        <div id="error-codigo" style="display:none;color:#D32B1E;font-size:13px;margin-top:8px;font-weight:600;"></div>
       </div>
 
-      <button class="btn-acceso-primario" onclick="irARegistro()">Validar código</button>
+      <button class="btn-acceso-primario" id="btn-validar-codigo" onclick="irARegistro()">Validar código</button>
     </div>
 
     <!-- Paso 2: registro de usuario -->
@@ -628,26 +629,28 @@
       <div class="paso-indicador"><span class="paso activo"></span><span class="paso activo"></span></div>
 
       <div class="subida-foto">
-        <div class="circulo-foto">
+        <div class="circulo-foto" id="circulo-foto-preview">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
         </div>
-        <button class="btn-foto">Subir fotografía</button>
+        <input type="file" id="input-foto-archivo" accept="image/*" style="display:none" onchange="previsualizarFoto(event)">
+        <button type="button" class="btn-foto" onclick="document.getElementById('input-foto-archivo').click()">Subir fotografía</button>
       </div>
 
       <div class="campo-form">
         <label>Nombre completo</label>
-        <input type="text" placeholder="Ej. María Ela Mangue">
+        <input type="text" placeholder="Ej. María Ela Mangue" id="input-nombre">
       </div>
       <div class="campo-form">
         <label>Correo electrónico</label>
-        <input type="email" placeholder="nombre@ministerio.gob.gn">
+        <input type="email" placeholder="nombre@ministerio.gob.gn" id="input-correo">
       </div>
       <div class="campo-form">
         <label>Teléfono</label>
-        <input type="tel" placeholder="+240 222 000 000">
+        <input type="tel" placeholder="+240 222 000 000" id="input-telefono">
       </div>
+      <div id="error-registro" style="display:none;color:#D32B1E;font-size:13px;margin:-8px 0 12px;font-weight:600;"></div>
 
-      <button class="btn-acceso-primario" onclick="entrarPlataforma()">Crear mi cuenta y entrar</button>
+      <button class="btn-acceso-primario" id="btn-crear-cuenta" onclick="entrarPlataforma()">Crear mi cuenta y entrar</button>
       <div class="enlace-cambiar"><span onclick="volverCodigo()">← Usar otro código de acceso</span></div>
     </div>
 
@@ -723,11 +726,12 @@
   </div>
 
   <div class="usuario-actual">
-    <div class="avatar">CN</div>
+    <div class="avatar" id="avatar-usuario-sidebar">CN</div>
     <div>
-      <div class="nombre">Oficina de la Lusofonía</div>
-      <div class="rol">Coordinador Nacional</div>
+      <div class="nombre" id="nombre-usuario-sidebar">Oficina de la Lusofonía</div>
+      <div class="rol" id="rol-usuario-sidebar">Coordinador Nacional</div>
     </div>
+    <span onclick="cerrarSesion()" style="margin-left:auto;cursor:pointer;font-size:11px;color:var(--gris-texto);text-decoration:underline;">Salir</span>
   </div>
 </aside>
 
@@ -1562,27 +1566,178 @@
 </main>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  function irARegistro() {
-    const codigo = document.getElementById('input-codigo').value.trim().toUpperCase();
-    const textoRol = document.getElementById('rol-detectado');
-    // Prefijo CN- identifica a la Comisión Nacional / Coordinación Nacional y Coordinación General: acceso total al sistema
-    if (codigo.startsWith('CN-') || codigo.startsWith('CNCPLP-CN') || codigo.startsWith('CG-')) {
-      textoRol.textContent = 'Código validado — Coordinación Nacional · Acceso completo a todos los subcomités';
-    } else {
-      textoRol.textContent = 'Código validado — Subcomité de Salud · Punto Focal';
-    }
-    document.getElementById('paso-codigo').style.display = 'none';
-    document.getElementById('paso-registro').style.display = 'block';
+  // ============ CONEXIÓN A LA BASE DE DATOS (SUPABASE) ============
+  const SUPABASE_URL = 'https://nxzyhxkzjrigzcwmvcqe.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_7cb11OB3DqcnALGeQ5LIGg_SrUGj4x7';
+  const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const TABLA_PERSONAS = 'Puntos Focales';
+  const CLAVE_SESION = 'cnCplpSesion';
+
+  let filaActual = null;
+  let fotoBase64 = '';
+
+  function iniciales(texto) {
+    if (!texto) return '··';
+    const partes = texto.trim().split(/\s+/).filter(Boolean);
+    return partes.slice(0, 2).map(p => p[0].toUpperCase()).join('') || '··';
   }
-  function volverCodigo() {
-    document.getElementById('paso-registro').style.display = 'none';
-    document.getElementById('paso-codigo').style.display = 'block';
+
+  function pintarUsuarioEnSidebar(datos) {
+    const nombreEl = document.getElementById('nombre-usuario-sidebar');
+    const rolEl = document.getElementById('rol-usuario-sidebar');
+    const avatarEl = document.getElementById('avatar-usuario-sidebar');
+    const nombreVisible = datos.nombre_completo || datos.rol || 'Usuario';
+    if (nombreEl) nombreEl.textContent = nombreVisible;
+    if (rolEl) rolEl.textContent = datos.rol || '';
+    if (avatarEl) avatarEl.textContent = iniciales(nombreVisible);
   }
-  function entrarPlataforma() {
+
+  function guardarSesionYEntrar(datos) {
+    try { localStorage.setItem(CLAVE_SESION, JSON.stringify(datos)); } catch (e) {}
+    pintarUsuarioEnSidebar(datos);
     document.getElementById('pantalla-acceso').style.display = 'none';
     document.getElementById('app-completa').style.display = 'flex';
   }
+
+  function mostrarErrorCodigo(mensaje) {
+    const el = document.getElementById('error-codigo');
+    el.textContent = mensaje;
+    el.style.display = 'block';
+  }
+
+  async function irARegistro() {
+    const codigo = document.getElementById('input-codigo').value.trim().toUpperCase();
+    const btn = document.getElementById('btn-validar-codigo');
+    const errorEl = document.getElementById('error-codigo');
+    errorEl.style.display = 'none';
+
+    if (!codigo) {
+      mostrarErrorCodigo('Por favor, introduzca su código de acceso.');
+      return;
+    }
+
+    btn.textContent = 'Comprobando...';
+    btn.disabled = true;
+
+    const { data, error } = await db.from(TABLA_PERSONAS).select('*').eq('codigo_acceso', codigo).maybeSingle();
+
+    btn.textContent = 'Validar código';
+    btn.disabled = false;
+
+    if (error) {
+      mostrarErrorCodigo('No se pudo conectar con la base de datos. Compruebe su conexión a internet e inténtelo de nuevo.');
+      console.error(error);
+      return;
+    }
+    if (!data) {
+      mostrarErrorCodigo('Código no válido. Verifique que lo ha escrito bien o contacte con su Coordinador Sectorial.');
+      return;
+    }
+
+    filaActual = data;
+
+    // Si esta persona ya se había registrado antes, entra directamente sin repetir el registro
+    if (data.nombre_completo && data.nombre_completo.trim() !== '') {
+      guardarSesionYEntrar(data);
+      return;
+    }
+
+    // Primer acceso con este código: pedir datos de registro
+    document.getElementById('rol-detectado').textContent = 'Código validado — ' + data.rol;
+    document.getElementById('paso-codigo').style.display = 'none';
+    document.getElementById('paso-registro').style.display = 'block';
+  }
+
+  function volverCodigo() {
+    filaActual = null;
+    fotoBase64 = '';
+    document.getElementById('paso-registro').style.display = 'none';
+    document.getElementById('paso-codigo').style.display = 'block';
+  }
+
+  function previsualizarFoto(evento) {
+    const archivo = evento.target.files[0];
+    if (!archivo) return;
+    const lector = new FileReader();
+    lector.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        // Reducimos la foto a un tamaño manejable antes de guardarla
+        const tam = 220;
+        const canvas = document.createElement('canvas');
+        canvas.width = tam;
+        canvas.height = tam;
+        const ctx = canvas.getContext('2d');
+        const escala = Math.max(tam / img.width, tam / img.height);
+        const x = (tam - img.width * escala) / 2;
+        const y = (tam - img.height * escala) / 2;
+        ctx.drawImage(img, x, y, img.width * escala, img.height * escala);
+        fotoBase64 = canvas.toDataURL('image/jpeg', 0.8);
+        document.getElementById('circulo-foto-preview').innerHTML =
+          '<img src="' + fotoBase64 + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
+      };
+      img.src = e.target.result;
+    };
+    lector.readAsDataURL(archivo);
+  }
+
+  async function entrarPlataforma() {
+    if (!filaActual) return;
+    const nombre = document.getElementById('input-nombre').value.trim();
+    const correo = document.getElementById('input-correo').value.trim();
+    const telefono = document.getElementById('input-telefono').value.trim();
+    const errorEl = document.getElementById('error-registro');
+    errorEl.style.display = 'none';
+
+    if (!nombre || !correo || !telefono) {
+      errorEl.textContent = 'Por favor, complete nombre, correo y teléfono.';
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    const btn = document.getElementById('btn-crear-cuenta');
+    btn.textContent = 'Guardando...';
+    btn.disabled = true;
+
+    const { data, error } = await db.from(TABLA_PERSONAS)
+      .update({ nombre_completo: nombre, correo: correo, telefono: telefono, foto_url: fotoBase64 || null })
+      .eq('codigo_acceso', filaActual.codigo_acceso)
+      .select()
+      .maybeSingle();
+
+    btn.textContent = 'Crear mi cuenta y entrar';
+    btn.disabled = false;
+
+    if (error) {
+      errorEl.textContent = 'No se pudo guardar su registro. Compruebe su conexión e inténtelo de nuevo.';
+      errorEl.style.display = 'block';
+      console.error(error);
+      return;
+    }
+
+    guardarSesionYEntrar(data || { ...filaActual, nombre_completo: nombre, correo, telefono, foto_url: fotoBase64 });
+  }
+
+  function cerrarSesion() {
+    try { localStorage.removeItem(CLAVE_SESION); } catch (e) {}
+    location.reload();
+  }
+
+  // Si el navegador ya tiene una sesión guardada, entra directamente sin pedir el código otra vez
+  document.addEventListener('DOMContentLoaded', function() {
+    let guardado = null;
+    try { guardado = localStorage.getItem(CLAVE_SESION); } catch (e) {}
+    if (guardado) {
+      try {
+        const datos = JSON.parse(guardado);
+        pintarUsuarioEnSidebar(datos);
+        document.getElementById('pantalla-acceso').style.display = 'none';
+        document.getElementById('app-completa').style.display = 'flex';
+      } catch (e) {}
+    }
+  });
 </script>
 
 <script>
