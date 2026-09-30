@@ -1195,62 +1195,67 @@
     </div>
     <div class="contenido">
       <div class="zona-subida">
-        <button class="btn-primario">Cargar documento (.pdf, .doc, .docx)</button>
-        <p>Arrastre un archivo aquí o haga clic para seleccionar. Al abrirlo, se mostrará en la aplicación predeterminada de su dispositivo.</p>
+        <input type="file" id="input-archivo-documento" style="display:none" accept=".pdf,.doc,.docx">
+        <button class="btn-primario" onclick="abrirModalDocumento()">Cargar documento (.pdf, .doc, .docx)</button>
+        <p>El archivo se sube a la carpeta que tenga abierta. Al pulsar "Abrir" en un documento, se descargará o abrirá con la aplicación predeterminada de su dispositivo.</p>
       </div>
 
       <div class="dos-columnas-docs">
-        <div class="lista-carpetas-lateral">
-          <div class="separador-carpetas">MI CARPETA</div>
-          <div class="carpeta-lateral activa" data-carpeta="salud">📁 Salud — mis documentos</div>
-          <div class="separador-carpetas">CARPETAS COMUNES</div>
+        <div class="lista-carpetas-lateral" id="lista-carpetas-lateral">
+          <div class="carpeta-lateral activa" data-carpeta="salud">📁 Salud</div>
           <div class="carpeta-lateral" data-carpeta="actas">📁 Actas de Reuniones CN-CPLP</div>
           <div class="carpeta-lateral" data-carpeta="planes">📁 Planes Estratégicos CPLP</div>
           <div class="carpeta-lateral" data-carpeta="circulares">📁 Circulares del Secretariado</div>
           <div class="carpeta-lateral" data-carpeta="plantillas">📁 Formatos y plantillas oficiales</div>
-          <div class="separador-carpetas">OTROS SUBCOMITÉS</div>
           <div class="carpeta-lateral" data-carpeta="educacion">📁 Educación</div>
           <div class="carpeta-lateral" data-carpeta="cultura">📁 Cultura</div>
           <div class="carpeta-lateral" data-carpeta="agricultura">📁 Agricultura</div>
         </div>
 
         <div>
-          <div class="ruta-carpeta" id="ruta-carpeta-actual"><span>Documentos</span> / Salud — mis documentos</div>
+          <div class="ruta-carpeta" id="ruta-carpeta-actual"><span>Documentos</span> / Salud</div>
           <table class="tabla-docs">
             <thead>
-              <tr><th>Nombre</th><th>Subido por</th><th>Versión</th><th>Confidencialidad</th><th>Tamaño</th><th>Actualizado</th><th></th></tr>
+              <tr><th>Nombre</th><th>Subido por</th><th>Versión</th><th>Confidencialidad</th><th>Actualizado</th><th></th></tr>
             </thead>
             <tbody id="tabla-docs-cuerpo">
-              <tr>
-                <td><div class="nombre-doc"><span class="icono-doc pdf">PDF</span>Informe Sectorial — Salud Pública 2026.pdf</div><div class="fila-doc-meta">Informe trimestral · Reunión Ministerial Sectorial</div></td>
-                <td>Dra. M. Ela Mangue</td>
-                <td><span class="version-tag">v3</span></td>
-                <td><span class="conf-tag interno">Uso interno</span></td>
-                <td class="peso-doc">2.4 MB</td>
-                <td>26 sep 2026, 10:12</td>
-                <td><button class="btn-abrir">Abrir</button></td>
-              </tr>
-              <tr>
-                <td><div class="nombre-doc"><span class="icono-doc doc">DOC</span>Plan de Vacunación Regional.docx</div><div class="fila-doc-meta">Plan de acción · Subcomité de Salud</div></td>
-                <td>Dr. B. Nsue</td>
-                <td><span class="version-tag">v1</span></td>
-                <td><span class="conf-tag interno">Uso interno</span></td>
-                <td class="peso-doc">1.1 MB</td>
-                <td>25 sep 2026, 16:40</td>
-                <td><button class="btn-abrir">Abrir</button></td>
-              </tr>
-              <tr>
-                <td><div class="nombre-doc"><span class="icono-doc pdf">PDF</span>Protocolo de Emergencia Sanitaria — CPLP.pdf</div><div class="fila-doc-meta">Protocolo oficial · Secretariado CPLP</div></td>
-                <td>A. Ondó Nchama</td>
-                <td><span class="version-tag">v2</span></td>
-                <td><span class="conf-tag restringido">Restringido</span></td>
-                <td class="peso-doc">3.8 MB</td>
-                <td>22 sep 2026, 09:05</td>
-                <td><button class="btn-abrir">Abrir</button></td>
-              </tr>
+              <tr><td colspan="6" style="text-align:center;color:var(--gris-texto);padding:24px;">Cargando documentos...</td></tr>
             </tbody>
           </table>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: SUBIR DOCUMENTO ============ -->
+  <div id="modal-documento" style="display:none;position:fixed;inset:0;background:rgba(10,46,82,0.55);z-index:100;align-items:center;justify-content:center;">
+    <div style="background:var(--blanco);border-radius:10px;padding:24px;max-width:420px;width:92%;max-height:90vh;overflow-y:auto;">
+      <h3 style="margin:0 0 16px;color:var(--marino);font-family:'Source Serif 4',Georgia,'Times New Roman',serif;">Cargar documento</h3>
+      <div class="campo-form">
+        <label>Archivo (.pdf, .doc, .docx)</label>
+        <button type="button" class="btn-abrir" style="width:100%;padding:10px;" onclick="document.getElementById('input-archivo-documento').click()">Seleccionar archivo</button>
+        <div class="ayuda" id="nombre-archivo-elegido">Ningún archivo seleccionado</div>
+      </div>
+      <div class="campo-form">
+        <label>Carpeta</label>
+        <select id="documento-carpeta" style="width:100%;padding:10px 13px;border:1px solid var(--gris-linea);border-radius:7px;font-size:13.5px;font-family:inherit;background:var(--hueso);"></select>
+      </div>
+      <div class="campo-form">
+        <label>Versión</label>
+        <input type="text" id="documento-version" value="v1">
+      </div>
+      <div class="campo-form">
+        <label>Confidencialidad</label>
+        <select id="documento-confidencialidad" style="width:100%;padding:10px 13px;border:1px solid var(--gris-linea);border-radius:7px;font-size:13.5px;font-family:inherit;background:var(--hueso);">
+          <option value="publico">Público</option>
+          <option value="interno" selected>Uso interno</option>
+          <option value="restringido">Restringido</option>
+        </select>
+      </div>
+      <div id="error-documento" style="display:none;color:#D32B1E;font-size:13px;margin:-8px 0 12px;font-weight:600;"></div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn-abrir" style="flex:1;padding:10px;" onclick="cerrarModalDocumento()">Cancelar</button>
+        <button class="btn-primario" id="btn-subir-documento" style="flex:1;" onclick="subirDocumento()">Subir</button>
       </div>
     </div>
   </div>
@@ -1599,6 +1604,7 @@
 
   let filaActual = null;
   let fotoBase64 = '';
+  let usuarioActual = null; // Datos de la persona con sesión iniciada, disponibles para el resto de la web
 
   function iniciales(texto) {
     if (!texto) return '··';
@@ -1618,6 +1624,7 @@
 
   function guardarSesionYEntrar(datos) {
     try { localStorage.setItem(CLAVE_SESION, JSON.stringify(datos)); } catch (e) {}
+    usuarioActual = datos;
     pintarUsuarioEnSidebar(datos);
     document.getElementById('pantalla-acceso').style.display = 'none';
     document.getElementById('app-completa').style.display = 'flex';
@@ -1754,6 +1761,7 @@
     if (guardado) {
       try {
         const datos = JSON.parse(guardado);
+        usuarioActual = datos;
         pintarUsuarioEnSidebar(datos);
         document.getElementById('pantalla-acceso').style.display = 'none';
         document.getElementById('app-completa').style.display = 'flex';
@@ -1812,57 +1820,55 @@
     });
   });
 
-  const datosCarpetas = {
-    salud: { ruta: 'Salud — mis documentos', filas: [
-      ['pdf','Informe Sectorial — Salud Pública 2026.pdf','Informe trimestral · Reunión Ministerial Sectorial','Dra. M. Ela Mangue','v3','interno','Uso interno','2.4 MB','26 sep 2026, 10:12'],
-      ['doc','Plan de Vacunación Regional.docx','Plan de acción · Subcomité de Salud','Dr. B. Nsue','v1','interno','Uso interno','1.1 MB','25 sep 2026, 16:40'],
-      ['pdf','Protocolo de Emergencia Sanitaria — CPLP.pdf','Protocolo oficial · Secretariado CPLP','A. Ondó Nchama','v2','restringido','Restringido','3.8 MB','22 sep 2026, 09:05'],
-    ]},
-    actas: { ruta: 'Actas de Reuniones CN-CPLP', filas: [
-      ['doc','Acta — Reunión Ordinaria del Comité Técnico (Agosto).docx','Acta oficial · Comité Técnico','Oficina de la Lusofonía','v1','interno','Uso interno','680 KB','21 sep 2026, 12:00'],
-      ['doc','Acta — Reunión Ordinaria del Comité Técnico (Julio).docx','Acta oficial · Comité Técnico','Oficina de la Lusofonía','v1','interno','Uso interno','654 KB','1 jul 2026, 12:00'],
-      ['pdf','Acta — Sesión Extraordinaria de la Comisión Nacional.pdf','Acta oficial · Comisión Nacional','Oficina de la Lusofonía','v2','restringido','Restringido','1.2 MB','30 jul 2026, 17:30'],
-    ]},
-    planes: { ruta: 'Planes Estratégicos CPLP', filas: [
-      ['pdf','Plan Estratégico de Cooperación 2026-2028.pdf','Plan estratégico · Secretariado CPLP','Secretariado CPLP','v4','publico','Público','5.6 MB','19 sep 2026, 08:00'],
-      ['pdf','Plan de Acción — Sector Educación.pdf','Plan de acción · Secretariado CPLP','Secretariado CPLP','v2','publico','Público','2.9 MB','5 sep 2026, 08:00'],
-    ]},
-    circulares: { ruta: 'Circulares del Secretariado', filas: [
-      ['pdf','Circular 12/2026 — Reunión Ministerial Sectorial.pdf','Circular oficial · Secretariado CPLP','Secretariado CPLP','v1','interno','Uso interno','410 KB','26 sep 2026, 07:15'],
-      ['pdf','Circular 11/2026 — Calendario de Reuniones.pdf','Circular oficial · Secretariado CPLP','Secretariado CPLP','v1','interno','Uso interno','388 KB','12 sep 2026, 09:00'],
-    ]},
-    plantillas: { ruta: 'Formatos y plantillas oficiales', filas: [
-      ['doc','Plantilla — Informe Sectorial Trimestral.docx','Plantilla oficial · Oficina de la Lusofonía','Oficina de la Lusofonía','v2','publico','Público','95 KB','28 ago 2026, 10:00'],
-      ['doc','Plantilla — Acta de Reunión de Subcomité.docx','Plantilla oficial · Oficina de la Lusofonía','Oficina de la Lusofonía','v1','publico','Público','78 KB','15 jul 2026, 10:00'],
-    ]},
-    educacion: { ruta: 'Educación', filas: [
-      ['pdf','Plan de Intercambio Estudiantil 2026-27.pdf','Plan de acción · Subcomité de Educación','P. Mba Nchama','v1','interno','Uso interno','2.1 MB','26 sep 2026, 07:30'],
-      ['doc','Programa de Enseñanza del Portugués.docx','Programa sectorial · Subcomité de Educación','C. Nsue Angue','v2','interno','Uso interno','1.4 MB','24 sep 2026, 11:20'],
-    ]},
-    cultura: { ruta: 'Cultura', filas: [
-      ['pdf','Propuesta de Protocolo — Cultura y Juventud.pdf','Propuesta · Subcomité de Cultura','V. Ndong Biyogo','v1','interno','Uso interno','1.7 MB','20 sep 2026, 15:10'],
-    ]},
-    agricultura: { ruta: 'Agricultura', filas: [
-      ['pdf','Plan de Seguridad Alimentaria 2026.pdf','Plan de acción · Subcomité de Agricultura','D. Mangue Obiang','v3','interno','Uso interno','3.2 MB','17 sep 2026, 09:45'],
-      ['doc','Informe de Sanidad Vegetal — Segundo Trimestre.docx','Informe trimestral · Subcomité de Agricultura','F. Nguema Nchama','v1','interno','Uso interno','1.0 MB','17 sep 2026, 09:45'],
-    ]},
+  // ============ DOCUMENTOS CONECTADOS A LA BASE DE DATOS Y AL ALMACÉN DE ARCHIVOS REAL ============
+  const nombresCarpetas = {
+    salud: 'Salud', actas: 'Actas de Reuniones CN-CPLP', planes: 'Planes Estratégicos CPLP',
+    circulares: 'Circulares del Secretariado', plantillas: 'Formatos y plantillas oficiales',
+    educacion: 'Educación', cultura: 'Cultura', agricultura: 'Agricultura'
   };
+  let carpetaActual = 'salud';
+  const CUBO_STORAGE = 'documentos';
 
-  function pintarCarpeta(clave) {
-    const datos = datosCarpetas[clave];
-    if (!datos) return;
-    document.getElementById('ruta-carpeta-actual').innerHTML = '<span>Documentos</span> / ' + datos.ruta;
+  function formatearFechaHora(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) + ', ' +
+      d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  const ETIQUETAS_CONF = { publico: 'Público', interno: 'Uso interno', restringido: 'Restringido' };
+
+  async function pintarCarpeta(clave) {
+    carpetaActual = clave;
+    document.getElementById('ruta-carpeta-actual').innerHTML = '<span>Documentos</span> / ' + (nombresCarpetas[clave] || clave);
     const cuerpo = document.getElementById('tabla-docs-cuerpo');
-    cuerpo.innerHTML = datos.filas.map(f => `
+    cuerpo.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--gris-texto);padding:24px;">Cargando documentos...</td></tr>';
+
+    const { data, error } = await db.from('documentos').select('*').eq('subcomite', clave).order('created_at', { ascending: false });
+    if (error) {
+      cuerpo.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#D32B1E;padding:24px;">No se pudieron cargar los documentos.</td></tr>';
+      console.error(error);
+      return;
+    }
+    if (!data || data.length === 0) {
+      cuerpo.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--gris-texto);padding:24px;">No hay documentos en esta carpeta todavía.</td></tr>';
+      return;
+    }
+
+    cuerpo.innerHTML = data.map(doc => {
+      const ext = (doc.nombre_archivo || '').split('.').pop().toLowerCase();
+      const icono = ext === 'pdf' ? 'pdf' : 'doc';
+      const conf = doc.confidencialidad || 'interno';
+      return `
       <tr>
-        <td><div class="nombre-doc"><span class="icono-doc ${f[0]}">${f[0].toUpperCase()}</span>${f[1]}</div><div class="fila-doc-meta">${f[2]}</div></td>
-        <td>${f[3]}</td>
-        <td><span class="version-tag">${f[4]}</span></td>
-        <td><span class="conf-tag ${f[5]}">${f[6]}</span></td>
-        <td class="peso-doc">${f[7]}</td>
-        <td>${f[8]}</td>
-        <td><button class="btn-abrir">Abrir</button></td>
-      </tr>`).join('');
+        <td><div class="nombre-doc"><span class="icono-doc ${icono}">${icono.toUpperCase()}</span>${escaparHtml(doc.nombre_archivo)}</div></td>
+        <td>${escaparHtml(doc.subido_por || '—')}</td>
+        <td><span class="version-tag">${escaparHtml(doc.version || 'v1')}</span></td>
+        <td><span class="conf-tag ${conf}">${ETIQUETAS_CONF[conf] || conf}</span></td>
+        <td>${formatearFechaHora(doc.created_at)}</td>
+        <td><a class="btn-abrir" href="${doc.url_archivo}" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block;">Abrir</a></td>
+      </tr>`;
+    }).join('');
   }
 
   document.querySelectorAll('.carpeta-lateral').forEach(item => {
@@ -1872,6 +1878,98 @@
       pintarCarpeta(item.dataset.carpeta);
     });
   });
+
+  let archivoElegido = null;
+
+  document.getElementById('input-archivo-documento').addEventListener('change', (e) => {
+    archivoElegido = e.target.files[0] || null;
+    document.getElementById('nombre-archivo-elegido').textContent = archivoElegido ? archivoElegido.name : 'Ningún archivo seleccionado';
+  });
+
+  function abrirModalDocumento() {
+    archivoElegido = null;
+    document.getElementById('input-archivo-documento').value = '';
+    document.getElementById('nombre-archivo-elegido').textContent = 'Ningún archivo seleccionado';
+    document.getElementById('documento-version').value = 'v1';
+    document.getElementById('documento-confidencialidad').value = 'interno';
+    document.getElementById('error-documento').style.display = 'none';
+
+    const selector = document.getElementById('documento-carpeta');
+    selector.innerHTML = '';
+    Object.keys(nombresCarpetas).forEach(clave => {
+      const opt = document.createElement('option');
+      opt.value = clave;
+      opt.textContent = nombresCarpetas[clave];
+      selector.appendChild(opt);
+    });
+    selector.value = carpetaActual;
+
+    document.getElementById('modal-documento').style.display = 'flex';
+  }
+
+  function cerrarModalDocumento() {
+    document.getElementById('modal-documento').style.display = 'none';
+  }
+
+  async function subirDocumento() {
+    const errorEl = document.getElementById('error-documento');
+    errorEl.style.display = 'none';
+
+    if (!archivoElegido) {
+      errorEl.textContent = 'Por favor, seleccione un archivo.';
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    const carpeta = document.getElementById('documento-carpeta').value;
+    const version = document.getElementById('documento-version').value.trim() || 'v1';
+    const confidencialidad = document.getElementById('documento-confidencialidad').value;
+    const subidoPor = (usuarioActual && (usuarioActual.nombre_completo || usuarioActual.rol)) || 'Usuario CN-CPLP';
+
+    const btn = document.getElementById('btn-subir-documento');
+    btn.textContent = 'Subiendo...';
+    btn.disabled = true;
+
+    const rutaArchivo = carpeta + '/' + Date.now() + '_' + archivoElegido.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+
+    const { error: errorSubida } = await db.storage.from(CUBO_STORAGE).upload(rutaArchivo, archivoElegido);
+    if (errorSubida) {
+      btn.textContent = 'Subir';
+      btn.disabled = false;
+      errorEl.textContent = 'No se pudo subir el archivo. Compruebe su conexión e inténtelo de nuevo.';
+      errorEl.style.display = 'block';
+      console.error(errorSubida);
+      return;
+    }
+
+    const { data: urlPublica } = db.storage.from(CUBO_STORAGE).getPublicUrl(rutaArchivo);
+
+    const { error: errorInsercion } = await db.from('documentos').insert({
+      nombre_archivo: archivoElegido.name,
+      subcomite: carpeta,
+      subido_por: subidoPor,
+      version: version,
+      confidencialidad: confidencialidad,
+      url_archivo: urlPublica.publicUrl
+    });
+
+    btn.textContent = 'Subir';
+    btn.disabled = false;
+
+    if (errorInsercion) {
+      errorEl.textContent = 'El archivo se subió, pero no se pudo guardar su información. Contacte con soporte.';
+      errorEl.style.display = 'block';
+      console.error(errorInsercion);
+      return;
+    }
+
+    cerrarModalDocumento();
+    document.querySelectorAll('.carpeta-lateral').forEach(i => i.classList.remove('activa'));
+    document.querySelector('.carpeta-lateral[data-carpeta="' + carpeta + '"]').classList.add('activa');
+    pintarCarpeta(carpeta);
+  }
+
+  pintarCarpeta('salud');
 
   // ============ CALENDARIO CONECTADO A LA BASE DE DATOS REAL ============
   const diasGrid = document.getElementById('dias-grid');
