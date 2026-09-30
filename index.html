@@ -1094,8 +1094,8 @@
   <!-- ============ DIRECTORIO ============ -->
   <div class="vista" id="vista-directorio">
     <div class="topbar">
-      <div><h2>Directorio</h2><div class="fecha">Comisión Nacional, Comité Técnico y puntos focales sectoriales · 80 personas</div></div>
-      <input class="buscador" placeholder="Buscar por nombre o sector...">
+      <div><h2>Directorio</h2><div class="fecha" id="subtitulo-directorio">Comisión Nacional, Comité Técnico y puntos focales sectoriales</div></div>
+      <input class="buscador" id="buscador-directorio" placeholder="Buscar por nombre o sector...">
     </div>
     <div class="contenido">
       <div class="panel">
@@ -1104,88 +1104,15 @@
             <thead>
               <tr><th>Nombre</th><th>Rol</th><th>Subcomité / Área</th><th>Correo</th><th>Teléfono</th></tr>
             </thead>
-            <tbody>
-              <tr>
-                <td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">OL</div>Oficina de la Lusofonía</div></td>
-                <td><span class="rol-tag nacional">Coordinador Nacional</span></td>
-                <td>Min. de Asuntos Exteriores, Cooperación Internacional y Diáspora</td>
-                <td>lusofonia@maecid.gob.gn</td>
-                <td>+240 222 000 000</td>
-              </tr>
-              <tr>
-                <td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">M1</div>Coordinador General I</div></td>
-                <td><span class="rol-tag nacional">Coord. General</span></td>
-                <td>Asuntos Sectoriales · Comité Técnico</td>
-                <td>coord.general1@maecid.gob.gn</td>
-                <td>+240 222 000 001</td>
-              </tr>
-              <tr>
-                <td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">M2</div>Coordinador General II</div></td>
-                <td><span class="rol-tag nacional">Coord. General</span></td>
-                <td>Asuntos Sectoriales · Comité Técnico</td>
-                <td>coord.general2@maecid.gob.gn</td>
-                <td>+240 222 000 002</td>
-              </tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">MN</div>M. Nzo Nchama</div></td><td><span class="rol-tag">Coord. Sectorial</span></td><td>A. Asuntos Internos</td><td>m.nzo@maecid.gob.gn</td><td>+240 222 010 001</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">EB</div>E. Biyogo Ntutumu</div></td><td><span class="rol-tag">Punto Focal</span></td><td>A. Asuntos Internos</td><td>e.biyogo@interior.gob.gn</td><td>+240 222 010 002</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">JA</div>J. Abaga Ondó</div></td><td><span class="rol-tag">Coord. Sectorial</span></td><td>B. Administración Pública</td><td>j.abaga@maecid.gob.gn</td><td>+240 222 020 001</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">SE</div>S. Ela Bibang</div></td><td><span class="rol-tag">Punto Focal</span></td><td>B. Administración Pública</td><td>s.ela@funcionpublica.gob.gn</td><td>+240 222 020 002</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">DM</div>D. Mangue Obiang</div></td><td><span class="rol-tag">Coord. Sectorial</span></td><td>C. Agricultura</td><td>d.mangue@maecid.gob.gn</td><td>+240 222 030 001</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">FN</div>F. Nguema Nchama</div></td><td><span class="rol-tag">Punto Focal</span></td><td>C. Agricultura</td><td>f.nguema@agricultura.gob.gn</td><td>+240 222 030 002</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">LA</div>L. Angue Osa</div></td><td><span class="rol-tag">Coord. Sectorial</span></td><td>D. Asuntos del Mar</td><td>l.angue@maecid.gob.gn</td><td>+240 222 040 001</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">PN</div>P. Ndong Mbomio</div></td><td><span class="rol-tag">Punto Focal</span></td><td>D. Asuntos del Mar</td><td>p.ndong@transportes.gob.gn</td><td>+240 222 040 002</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">GO</div>G. Obiang Nsue</div></td><td><span class="rol-tag">Coord. Sectorial</span></td><td>E. Asuntos Parlamentarios</td><td>g.obiang@maecid.gob.gn</td><td>+240 222 050 001</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">VM</div>V. Mba Ondó</div></td><td><span class="rol-tag">Punto Focal</span></td><td>E. Asuntos Parlamentarios</td><td>v.mba@camara.gob.gn</td><td>+240 222 050 002</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">NB</div>N. Bindang Osa</div></td><td><span class="rol-tag">Coord. Sectorial</span></td><td>F. Ciencia y Tecnología</td><td>n.bindang@maecid.gob.gn</td><td>+240 222 060 001</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">IN</div>I. Nguema Mangue</div></td><td><span class="rol-tag">Punto Focal</span></td><td>F. Ciencia y Tecnología</td><td>i.nguema@cicte.gob.gn</td><td>+240 222 060 002</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">AO</div>A. Ondó Nchama</div></td><td><span class="rol-tag">Coord. Sectorial</span></td><td>G. Comercio</td><td>a.ondo@maecid.gob.gn</td><td>+240 222 070 001</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">CB</div>C. Bibang Nsue</div></td><td><span class="rol-tag">Punto Focal</span></td><td>G. Comercio</td><td>c.bibang@economia.gob.gn</td><td>+240 222 070 002</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">RN</div>R. Nfono Angue</div></td><td><span class="rol-tag">Coord. Sectorial</span></td><td>H. Telecomunicaciones</td><td>r.nfono@maecid.gob.gn</td><td>+240 222 080 001</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">OE</div>O. Esono Nchama</div></td><td><span class="rol-tag">Punto Focal</span></td><td>H. Telecomunicaciones</td><td>o.esono@transportes.gob.gn</td><td>+240 222 080 002</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">AM</div>A. Ondó Mba</div></td><td><span class="rol-tag">Coord. Sectorial</span></td><td>I. Transportes</td><td>a.ondo.mba@maecid.gob.gn</td><td>+240 222 090 001</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">YN</div>Y. Nsue Ela</div></td><td><span class="rol-tag">Punto Focal</span></td><td>I. Transportes</td><td>y.nsue@transportes.gob.gn</td><td>+240 222 090 002</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">VN</div>V. Ndong Biyogo</div></td><td><span class="rol-tag">Coord. Sectorial</span></td><td>J. Cultura</td><td>v.ndong@maecid.gob.gn</td><td>+240 222 100 001</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">SO</div>S. Obama Nchama</div></td><td><span class="rol-tag">Punto Focal</span></td><td>J. Cultura</td><td>s.obama@cultura.gob.gn</td><td>+240 222 100 002</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">EN</div>Cnel. E. Nchama Ela</div></td><td><span class="rol-tag">Coord. Sectorial</span></td><td>K. Defensa</td><td>e.nchama@maecid.gob.gn</td><td>+240 222 110 001</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">BO</div>Tte. Cnel. B. Obono</div></td><td><span class="rol-tag">Punto Focal</span></td><td>K. Defensa</td><td>b.obono@defensa.gob.gn</td><td>+240 222 110 002</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">FM</div>F. Mangue Nzang</div></td><td><span class="rol-tag">Coord. Sectorial</span></td><td>L. Juventud y Deporte</td><td>f.mangue@maecid.gob.gn</td><td>+240 222 120 001</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">SB</div>S. Bibang Ntutumu</div></td><td><span class="rol-tag">Punto Focal</span></td><td>L. Juventud y Deporte</td><td>s.bibang@educacion.gob.gn</td><td>+240 222 120 002</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">RO</div>R. Obiang Angue</div></td><td><span class="rol-tag">Coord. Sectorial</span></td><td>M. Economía y Empresa</td><td>r.obiang@maecid.gob.gn</td><td>+240 222 130 001</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">CN2</div>C. Nzo Bindang</div></td><td><span class="rol-tag">Punto Focal</span></td><td>M. Economía y Empresa</td><td>c.nzo@economia.gob.gn</td><td>+240 222 130 002</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">PM</div>P. Mba Nchama</div></td><td><span class="rol-tag">Coord. Sectorial</span></td><td>N. Educación</td><td>p.mba@maecid.gob.gn</td><td>+240 222 140 001</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">CA</div>C. Nsue Angue</div></td><td><span class="rol-tag">Punto Focal</span></td><td>N. Educación</td><td>c.nsue@educacion.gob.gn</td><td>+240 222 140 002</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">HN</div>H. Nguema Ntutumu</div></td><td><span class="rol-tag">Coord. Sectorial</span></td><td>O. Energía</td><td>h.nguema@maecid.gob.gn</td><td>+240 222 150 001</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">GM</div>G. Mba Esono</div></td><td><span class="rol-tag">Punto Focal</span></td><td>O. Energía</td><td>g.mba@hidrocarburos.gob.gn</td><td>+240 222 150 002</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">DO</div>D. Osa Nfono</div></td><td><span class="rol-tag">Coord. Sectorial</span></td><td>P. Finanzas</td><td>d.osa@maecid.gob.gn</td><td>+240 222 160 001</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">AB</div>A. Bindang Ela</div></td><td><span class="rol-tag">Punto Focal</span></td><td>P. Finanzas</td><td>a.bindang@hacienda.gob.gn</td><td>+240 222 160 002</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">TE</div>T. Ela Mangue</div></td><td><span class="rol-tag">Coord. Sectorial</span></td><td>Q. Igualdad de Género</td><td>t.ela@maecid.gob.gn</td><td>+240 222 170 001</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">NA</div>N. Angue Nsue</div></td><td><span class="rol-tag">Punto Focal</span></td><td>Q. Igualdad de Género</td><td>n.angue@igualdad.gob.gn</td><td>+240 222 170 002</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">BN</div>B. Nchama Nzo</div></td><td><span class="rol-tag">Coord. Sectorial</span></td><td>R. Justicia</td><td>b.nchama@maecid.gob.gn</td><td>+240 222 180 001</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">EE</div>E. Esono Bibang</div></td><td><span class="rol-tag">Punto Focal</span></td><td>R. Justicia</td><td>e.esono@justicia.gob.gn</td><td>+240 222 180 002</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">EN2</div>E. Nfono Obama</div></td><td><span class="rol-tag">Coord. Sectorial</span></td><td>S. Medio Ambiente</td><td>e.nfono@maecid.gob.gn</td><td>+240 222 190 001</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">MA</div>M. Abeso Ela</div></td><td><span class="rol-tag">Punto Focal</span></td><td>S. Medio Ambiente</td><td>m.abeso@ambiente.gob.gn</td><td>+240 222 190 002</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">BE</div>B. Esono Nzang</div></td><td><span class="rol-tag">Coord. Sectorial</span></td><td>T. Pesca</td><td>b.esono@maecid.gob.gn</td><td>+240 222 200 001</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">CO</div>C. Obiang Ntutumu</div></td><td><span class="rol-tag">Punto Focal</span></td><td>T. Pesca</td><td>c.obiang@ambiente.gob.gn</td><td>+240 222 200 002</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">SN</div>S. Nzo Ela</div></td><td><span class="rol-tag">Coord. Sectorial</span></td><td>U. Propiedad Intelectual</td><td>s.nzo@maecid.gob.gn</td><td>+240 222 210 001</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">JM</div>J. Mangue Osa</div></td><td><span class="rol-tag">Punto Focal</span></td><td>U. Propiedad Intelectual</td><td>j.mangue@cicte.gob.gn</td><td>+240 222 210 002</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">AO2</div>A. Ondó Nchama</div></td><td><span class="rol-tag">Coord. Sectorial</span></td><td>V. Salud</td><td>a.ondo.salud@maecid.gob.gn</td><td>+240 222 220 001</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">ME</div>Dra. M. Ela Mangue</div></td><td><span class="rol-tag">Punto Focal</span></td><td>V. Salud</td><td>m.ela@sanidad.gob.gn</td><td>+240 222 220 002</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">FO</div>F. Obono Nzang</div></td><td><span class="rol-tag">Coord. Sectorial</span></td><td>W. Trabajo y Asuntos Sociales</td><td>f.obono@maecid.gob.gn</td><td>+240 222 230 001</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">CB2</div>C. Bindang Nchama</div></td><td><span class="rol-tag">Punto Focal</span></td><td>W. Trabajo y Asuntos Sociales</td><td>c.bindang@trabajo.gob.gn</td><td>+240 222 230 002</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">ME2</div>M. Ela Ndong</div></td><td><span class="rol-tag">Coord. Sectorial</span></td><td>X. Turismo</td><td>m.ela.turismo@maecid.gob.gn</td><td>+240 222 240 001</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">AN</div>A. Nfono Bibang</div></td><td><span class="rol-tag">Punto Focal</span></td><td>X. Turismo</td><td>a.nfono@turismo.gob.gn</td><td>+240 222 240 002</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">GN</div>G. Nchama Obono</div></td><td><span class="rol-tag">Coord. Sectorial</span></td><td>Y. Derechos Humanos y Sociedad Civil</td><td>g.nchama@maecid.gob.gn</td><td>+240 222 250 001</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">PE</div>P. Ela Mba</div></td><td><span class="rol-tag">Punto Focal</span></td><td>Y. Derechos Humanos y Sociedad Civil</td><td>p.ela@justicia.gob.gn</td><td>+240 222 250 002</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">NO</div>N. Osa Ndong</div></td><td><span class="rol-tag">Coord. Sectorial</span></td><td>Z. Información y Comunicación</td><td>n.osa@maecid.gob.gn</td><td>+240 222 260 001</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">HA</div>H. Angue Mangue</div></td><td><span class="rol-tag">Punto Focal</span></td><td>Z. Información y Comunicación</td><td>h.angue@informacion.gob.gn</td><td>+240 222 260 002</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">OE2</div>O. Ela Nzang</div></td><td><span class="rol-tag">Coord. Sectorial</span></td><td>AA. Apoyo Gubernamental</td><td>o.ela@maecid.gob.gn</td><td>+240 222 270 001</td></tr>
-              <tr><td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">KN</div>K. Nguema Ondó</div></td><td><span class="rol-tag">Punto Focal</span></td><td>AA. Apoyo Gubernamental</td><td>k.nguema@unge.gob.gn</td><td>+240 222 270 002</td></tr>
+            <tbody id="tabla-directorio-cuerpo">
+              <tr><td colspan="5" style="text-align:center;color:var(--gris-texto);padding:24px;">Cargando directorio...</td></tr>
             </tbody>
           </table>
         </div>
       </div>
     </div>
   </div>
+
 
   <!-- ============ DOCUMENTOS ============ -->
   <div class="vista" id="vista-documentos">
@@ -1970,6 +1897,102 @@
   }
 
   pintarCarpeta('salud');
+
+  // ============ DIRECTORIO CONECTADO A LA BASE DE DATOS REAL ============
+  let directorioCache = [];
+  let nombresSubcomitesDirectorio = {};
+
+  const ETIQUETAS_ROL = {
+    prefijoCN: 'Coordinador Nacional',
+    prefijoPFN: 'Punto Focal Nacional',
+    prefijoML: 'Enlace en Lisboa',
+    prefijoCS: 'Coord. Sectorial',
+    sufijoADJ: 'Punto Focal Adj.',
+    porDefecto: 'Punto Focal'
+  };
+
+  function etiquetaRol(codigo) {
+    if (codigo.startsWith('CN-')) return ETIQUETAS_ROL.prefijoCN;
+    if (codigo.startsWith('PFN-')) return ETIQUETAS_ROL.prefijoPFN;
+    if (codigo.startsWith('ML-')) return ETIQUETAS_ROL.prefijoML;
+    if (codigo.startsWith('CS-')) return ETIQUETAS_ROL.prefijoCS;
+    if (codigo.endsWith('-ADJ')) return ETIQUETAS_ROL.sufijoADJ;
+    return ETIQUETAS_ROL.porDefecto;
+  }
+
+  function ordenDirectorio(p) {
+    const letra = p.subcomite || 'GENERAL';
+    const grupo = letra === 'GENERAL' ? -1 : letra.length;
+    let prioridad = 1;
+    if (p.codigo_acceso.startsWith('CN-')) prioridad = 0;
+    else if (p.codigo_acceso.startsWith('PFN-')) prioridad = 1;
+    else if (p.codigo_acceso.startsWith('ML-')) prioridad = 2;
+    else if (p.codigo_acceso.startsWith('CS-')) prioridad = 0;
+    else if (p.codigo_acceso.endsWith('-ADJ')) prioridad = 2;
+    return grupo + '|' + letra + '|' + prioridad + '|' + p.codigo_acceso;
+  }
+
+  function pintarDirectorio(filtro) {
+    const cuerpo = document.getElementById('tabla-directorio-cuerpo');
+    const texto = (filtro || '').trim().toLowerCase();
+    const filas = directorioCache.filter(p => {
+      if (!texto) return true;
+      const nombreSub = p.subcomite === 'GENERAL' ? 'coordinación general' : (nombresSubcomitesDirectorio[p.subcomite] || p.subcomite || '');
+      return (p.nombre_completo || '').toLowerCase().includes(texto) ||
+        (p.rol || '').toLowerCase().includes(texto) ||
+        nombreSub.toLowerCase().includes(texto);
+    });
+
+    if (filas.length === 0) {
+      cuerpo.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--gris-texto);padding:24px;">No se encontró a nadie con ese criterio.</td></tr>';
+      return;
+    }
+
+    cuerpo.innerHTML = filas.map(p => {
+      const registrado = p.nombre_completo && p.nombre_completo.trim() !== '';
+      const nombreMostrado = registrado ? p.nombre_completo : 'Pendiente de registro';
+      const inicialesP = registrado ? iniciales(p.nombre_completo) : '··';
+      const nombreSub = p.subcomite === 'GENERAL'
+        ? 'Coordinación General'
+        : (p.subcomite + '. ' + (nombresSubcomitesDirectorio[p.subcomite] || ''));
+      const claseRol = p.subcomite === 'GENERAL' ? 'rol-tag nacional' : 'rol-tag';
+      const estiloFila = registrado ? '' : ' style="opacity:0.55;"';
+      return '<tr' + estiloFila + '>' +
+        '<td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">' + inicialesP + '</div>' + escaparHtml(nombreMostrado) + '</div></td>' +
+        '<td><span class="' + claseRol + '">' + escaparHtml(etiquetaRol(p.codigo_acceso)) + '</span></td>' +
+        '<td>' + escaparHtml(nombreSub) + '</td>' +
+        '<td>' + (registrado ? escaparHtml(p.correo || '—') : '—') + '</td>' +
+        '<td>' + (registrado ? escaparHtml(p.telefono || '—') : '—') + '</td>' +
+        '</tr>';
+    }).join('');
+  }
+
+  async function cargarDirectorio() {
+    const [respPersonas, respSubcomites] = await Promise.all([
+      db.from('Puntos Focales').select('codigo_acceso,nombre_completo,correo,telefono,subcomite,rol').order('codigo_acceso'),
+      db.from('Subcomites').select('letra,nombre')
+    ]);
+
+    if (respPersonas.error) {
+      document.getElementById('tabla-directorio-cuerpo').innerHTML = '<tr><td colspan="5" style="text-align:center;color:#D32B1E;padding:24px;">No se pudo cargar el directorio.</td></tr>';
+      console.error(respPersonas.error);
+      return;
+    }
+
+    (respSubcomites.data || []).forEach(s => { if (!nombresSubcomitesDirectorio[s.letra]) nombresSubcomitesDirectorio[s.letra] = s.nombre; });
+
+    directorioCache = (respPersonas.data || []).slice().sort((a, b) => ordenDirectorio(a) < ordenDirectorio(b) ? -1 : 1);
+
+    const registrados = directorioCache.filter(p => p.nombre_completo && p.nombre_completo.trim() !== '').length;
+    document.getElementById('subtitulo-directorio').textContent =
+      'Comisión Nacional, Comité Técnico y puntos focales sectoriales · ' + directorioCache.length + ' puestos (' + registrados + ' registrados)';
+
+    pintarDirectorio(document.getElementById('buscador-directorio').value);
+  }
+
+  document.getElementById('buscador-directorio').addEventListener('input', (e) => pintarDirectorio(e.target.value));
+
+  cargarDirectorio();
 
   // ============ CALENDARIO CONECTADO A LA BASE DE DATOS REAL ============
   const diasGrid = document.getElementById('dias-grid');
