@@ -245,9 +245,11 @@
   .tarjeta-subcomite {
     background: var(--blanco);
     border: 1px solid var(--gris-linea);
-    border-radius: 6px;
+    border-radius: 8px;
     padding: 16px;
+    transition: box-shadow 0.15s, border-color 0.15s;
   }
+  .tarjeta-subcomite:hover { box-shadow: 0 3px 14px rgba(10,46,82,0.09); border-color: #c9d3dc; }
   .tarjeta-subcomite .letra {
     display: inline-flex; align-items: center; justify-content: center;
     width: 26px; height: 26px;
@@ -258,12 +260,22 @@
     margin-bottom: 10px;
     font-family: 'Source Serif 4', serif;
   }
-  .tarjeta-subcomite .nombre-sub { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
-  .tarjeta-subcomite .depto { font-size: 12px; color: var(--gris-texto); margin-bottom: 10px; line-height: 1.4; }
+  .tarjeta-subcomite .nombre-sub { font-size: 14.5px; font-weight: 700; margin-bottom: 3px; color: var(--marino); }
+  .tarjeta-subcomite .depto { font-size: 12px; color: var(--gris-texto); margin-bottom: 10px; line-height: 1.4; min-height: 17px; }
   .tarjeta-subcomite .roles { border-top: 1px solid var(--gris-linea); padding-top: 10px; }
-  .rol-fila { display: flex; align-items: center; gap: 8px; font-size: 12px; margin-bottom: 5px; }
-  .rol-fila .etiqueta-rol { color: var(--gris-texto); width: 92px; flex-shrink: 0; }
+  .rol-fila { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; margin-bottom: 6px; }
+  .rol-fila .etiqueta-rol { color: var(--gris-texto); width: 108px; flex-shrink: 0; padding-top: 1px; }
   .rol-fila .nombre-rol { font-weight: 600; }
+  .rol-fila .nombre-rol.pendiente { font-weight: 400; color: var(--gris-texto); font-style: italic; }
+
+  .tarjeta-subcomite.coordinacion-general {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, rgba(10,46,82,0.04), rgba(10,46,82,0.01));
+    border: 1px solid rgba(10,46,82,0.18);
+  }
+  .tarjeta-subcomite.coordinacion-general .letra { background: var(--rojo-ge, #D32B1E); }
+  .tarjeta-subcomite.coordinacion-general .roles { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 4px 24px; }
+  .contador-subcomites { font-size: 12px; color: var(--gris-texto); margin-bottom: 14px; }
 
   /* ---------- DIRECTORIO ---------- */
   .tabla-directorio { width: 100%; border-collapse: collapse; background: var(--blanco); border: 1px solid var(--gris-linea); border-radius: 6px; overflow: hidden; }
@@ -867,277 +879,18 @@
   <!-- ============ SUBCOMITÉS ============ -->
   <div class="vista" id="vista-subcomites">
     <div class="topbar">
-      <div><h2>Subcomités del Comité Técnico</h2><div class="fecha">27 subcomités según Decreto de reforma de la CN-CPLP</div></div>
-      <input class="buscador" placeholder="Buscar subcomité...">
+      <div><h2>Subcomités del Comité Técnico</h2><div class="fecha">27 subcomités sectoriales, según el Decreto de reforma de la CN-CPLP, más la Coordinación General</div></div>
+      <input class="buscador" id="buscador-subcomites" placeholder="Buscar por subcomité, dirección general o persona...">
     </div>
     <div class="contenido">
-      <div class="filtros-fila">
-        <button class="chip activo">Todos (27)</button>
-        <button class="chip">Al día</button>
-        <button class="chip">Pendientes</button>
-        <button class="chip">Atrasados</button>
+      <div class="panel" style="padding:16px 18px;margin-bottom:18px;background:var(--hueso);border:1px solid var(--gris-linea);">
+        <p style="margin:0;font-size:13px;color:var(--gris-texto);line-height:1.6;">
+          Cada <strong>subcomité</strong> es el equipo responsable de un área sectorial de la cooperación con la CPLP (salud, educación, agricultura...). Lo integran un <strong>Coordinador Sectorial</strong> (de la Oficina de la Lusofonía), un <strong>Punto Focal</strong> y su <strong>Punto Focal Adjunto</strong>, designados por la Dirección General del ministerio correspondiente. La tarjeta de <strong>Coordinación General</strong> agrupa a quienes coordinan el conjunto: el Coordinador Nacional, el/los Punto(s) Focal(es) Nacional(es) y el Enlace en Lisboa ante la Misión Permanente.
+        </p>
       </div>
-      <div class="grid-subcomites">
-        <div class="tarjeta-subcomite">
-          <div class="letra">V</div>
-          <div class="nombre-sub">Salud</div>
-          <div class="depto">Dir. Gral. de Salud Pública, Prevención Sanitaria y Medicina Tradicional · Min. de Sanidad</div>
-          <div class="roles">
-            <div class="rol-fila"><span class="etiqueta-rol">Coord. Sectorial</span><span class="nombre-rol">A. Ondó Nchama</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal</span><span class="nombre-rol">Dra. M. Ela Mangue</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal Adj.</span><span class="nombre-rol">Dr. B. Nsue</span></div>
-          </div>
-        </div>
-        <div class="tarjeta-subcomite">
-          <div class="letra">N</div>
-          <div class="nombre-sub">Educación</div>
-          <div class="depto">Dir. Gral. de Cooperación Educativa y Enseñanza de Lenguas · Min. de Educación</div>
-          <div class="roles">
-            <div class="rol-fila"><span class="etiqueta-rol">Coord. Sectorial</span><span class="nombre-rol">P. Mba Nchama</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal</span><span class="nombre-rol">C. Nsue Angue</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal Adj.</span><span class="nombre-rol">R. Esono Ela</span></div>
-          </div>
-        </div>
-        <div class="tarjeta-subcomite">
-          <div class="letra">J</div>
-          <div class="nombre-sub">Cultura</div>
-          <div class="depto">Dir. Gral. de Promoción Artística y Cultural · Min. de Información, Prensa, Cultura y Turismo</div>
-          <div class="roles">
-            <div class="rol-fila"><span class="etiqueta-rol">Coord. Sectorial</span><span class="nombre-rol">V. Ndong Biyogo</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal</span><span class="nombre-rol">S. Obama Nchama</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal Adj.</span><span class="nombre-rol">T. Nguema Bindang</span></div>
-          </div>
-        </div>
-        <div class="tarjeta-subcomite">
-          <div class="letra">C</div>
-          <div class="nombre-sub">Agricultura</div>
-          <div class="depto">Dir. Gral. de Agricultura y Sanidad Vegetal · Min. de Agricultura, Ganadería y Bosques</div>
-          <div class="roles">
-            <div class="rol-fila"><span class="etiqueta-rol">Coord. Sectorial</span><span class="nombre-rol">D. Mangue Obiang</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal</span><span class="nombre-rol">F. Nguema Nchama</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal Adj.</span><span class="nombre-rol">L. Ondó Esono</span></div>
-          </div>
-        </div>
-        <div class="tarjeta-subcomite">
-          <div class="letra">S</div>
-          <div class="nombre-sub">Medio Ambiente</div>
-          <div class="depto">Dir. Gral. de Cambio Climático y Convenciones Internacionales · Min. de Medio Ambiente</div>
-          <div class="roles">
-            <div class="rol-fila"><span class="etiqueta-rol">Coord. Sectorial</span><span class="nombre-rol">E. Nfono Obama</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal</span><span class="nombre-rol">M. Abeso Ela</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal Adj.</span><span class="nombre-rol">J. Nchama Mba</span></div>
-          </div>
-        </div>
-        <div class="tarjeta-subcomite">
-          <div class="letra">T</div>
-          <div class="nombre-sub">Pesca</div>
-          <div class="depto">Dir. Gral. de Economía Azul y Ecosistemas Marinos · Min. de Medio Ambiente y Economía Azul</div>
-          <div class="roles">
-            <div class="rol-fila"><span class="etiqueta-rol">Coord. Sectorial</span><span class="nombre-rol">B. Esono Nzang</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal</span><span class="nombre-rol">C. Obiang Ntutumu</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal Adj.</span><span class="nombre-rol">R. Micha Ndong</span></div>
-          </div>
-        </div>
-        <div class="tarjeta-subcomite">
-          <div class="letra">A</div>
-          <div class="nombre-sub">Asuntos Internos</div>
-          <div class="depto">Dir. Gral. de Política Interior · Min. del Interior y Administración Territorial</div>
-          <div class="roles">
-            <div class="rol-fila"><span class="etiqueta-rol">Coord. Sectorial</span><span class="nombre-rol">M. Nzo Nchama</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal</span><span class="nombre-rol">E. Biyogo Ntutumu</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal Adj.</span><span class="nombre-rol">A. Nve Esono</span></div>
-          </div>
-        </div>
-        <div class="tarjeta-subcomite">
-          <div class="letra">B</div>
-          <div class="nombre-sub">Administración Pública</div>
-          <div class="depto">Dir. Gral. de la Función Pública · Min. de la Función Pública, Reforma Administrativa y Seg. Social</div>
-          <div class="roles">
-            <div class="rol-fila"><span class="etiqueta-rol">Coord. Sectorial</span><span class="nombre-rol">J. Abaga Ondó</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal</span><span class="nombre-rol">S. Ela Bibang</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal Adj.</span><span class="nombre-rol">F. Nsue Obono</span></div>
-          </div>
-        </div>
-        <div class="tarjeta-subcomite">
-          <div class="letra">D</div>
-          <div class="nombre-sub">Asuntos del Mar</div>
-          <div class="depto">Dir. Gral. de Puertos y Marina Mercante · Min. de Transportes, Telecomunicaciones y Aviación Civil</div>
-          <div class="roles">
-            <div class="rol-fila"><span class="etiqueta-rol">Coord. Sectorial</span><span class="nombre-rol">L. Angue Osa</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal</span><span class="nombre-rol">P. Ndong Mbomio</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal Adj.</span><span class="nombre-rol">C. Ela Nchama</span></div>
-          </div>
-        </div>
-        <div class="tarjeta-subcomite">
-          <div class="letra">E</div>
-          <div class="nombre-sub">Asuntos Parlamentarios</div>
-          <div class="depto">Secretaría General de la Cámara de Diputados y del Senado</div>
-          <div class="roles">
-            <div class="rol-fila"><span class="etiqueta-rol">Coord. Sectorial</span><span class="nombre-rol">G. Obiang Nsue</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal</span><span class="nombre-rol">V. Mba Ondó</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal Adj.</span><span class="nombre-rol">H. Nzang Ela</span></div>
-          </div>
-        </div>
-        <div class="tarjeta-subcomite">
-          <div class="letra">F</div>
-          <div class="nombre-sub">Ciencia y Tecnología</div>
-          <div class="depto">Secretaría General del Consejo de Investigación Científica y Tecnológica (CICTE)</div>
-          <div class="roles">
-            <div class="rol-fila"><span class="etiqueta-rol">Coord. Sectorial</span><span class="nombre-rol">N. Bindang Osa</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal</span><span class="nombre-rol">I. Nguema Mangue</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal Adj.</span><span class="nombre-rol">D. Ntutumu Esono</span></div>
-          </div>
-        </div>
-        <div class="tarjeta-subcomite">
-          <div class="letra">H</div>
-          <div class="nombre-sub">Telecomunicaciones</div>
-          <div class="depto">Dir. Gral. de Telecomunicaciones · Min. de Transportes, Telecomunicaciones y Aviación Civil</div>
-          <div class="roles">
-            <div class="rol-fila"><span class="etiqueta-rol">Coord. Sectorial</span><span class="nombre-rol">R. Nfono Angue</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal</span><span class="nombre-rol">O. Esono Nchama</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal Adj.</span><span class="nombre-rol">K. Mba Nzo</span></div>
-          </div>
-        </div>
-        <div class="tarjeta-subcomite">
-          <div class="letra">I</div>
-          <div class="nombre-sub">Transportes</div>
-          <div class="depto">Dir. Gral. de Transportes Terrestres · Min. de Transportes, Telecomunicaciones y Aviación Civil</div>
-          <div class="roles">
-            <div class="rol-fila"><span class="etiqueta-rol">Coord. Sectorial</span><span class="nombre-rol">A. Ondó Mba</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal</span><span class="nombre-rol">Y. Nsue Ela</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal Adj.</span><span class="nombre-rol">M. Angue Biyogo</span></div>
-          </div>
-        </div>
-        <div class="tarjeta-subcomite">
-          <div class="letra">K</div>
-          <div class="nombre-sub">Defensa</div>
-          <div class="depto">Dir. Gral. de Cooperación Militar · Min. de Defensa Nacional</div>
-          <div class="roles">
-            <div class="rol-fila"><span class="etiqueta-rol">Coord. Sectorial</span><span class="nombre-rol">Cnel. E. Nchama Ela</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal</span><span class="nombre-rol">Tte. Cnel. B. Obono</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal Adj.</span><span class="nombre-rol">Cte. J. Ndong Osa</span></div>
-          </div>
-        </div>
-        <div class="tarjeta-subcomite">
-          <div class="letra">L</div>
-          <div class="nombre-sub">Juventud y Deporte</div>
-          <div class="depto">Dir. Gral. de Juventud · Min. de Educación, Ciencia, Juventud y Deportes</div>
-          <div class="roles">
-            <div class="rol-fila"><span class="etiqueta-rol">Coord. Sectorial</span><span class="nombre-rol">F. Mangue Nzang</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal</span><span class="nombre-rol">S. Bibang Ntutumu</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal Adj.</span><span class="nombre-rol">L. Esono Abeso</span></div>
-          </div>
-        </div>
-        <div class="tarjeta-subcomite">
-          <div class="letra">M</div>
-          <div class="nombre-sub">Economía y Empresa</div>
-          <div class="depto">Dir. Gral. de Estrategia Económica y Diversificación Productiva · Min. de Economía, Comercio, Industria</div>
-          <div class="roles">
-            <div class="rol-fila"><span class="etiqueta-rol">Coord. Sectorial</span><span class="nombre-rol">R. Obiang Angue</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal</span><span class="nombre-rol">C. Nzo Bindang</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal Adj.</span><span class="nombre-rol">V. Ela Osa</span></div>
-          </div>
-        </div>
-        <div class="tarjeta-subcomite">
-          <div class="letra">O</div>
-          <div class="nombre-sub">Energía</div>
-          <div class="depto">Dir. Gral. de Electricidad y Fomento de Energías Renovables · Min. de Hidrocarburos, Minas y Electricidad</div>
-          <div class="roles">
-            <div class="rol-fila"><span class="etiqueta-rol">Coord. Sectorial</span><span class="nombre-rol">H. Nguema Ntutumu</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal</span><span class="nombre-rol">G. Mba Esono</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal Adj.</span><span class="nombre-rol">P. Ndong Nchama</span></div>
-          </div>
-        </div>
-        <div class="tarjeta-subcomite">
-          <div class="letra">P</div>
-          <div class="nombre-sub">Finanzas</div>
-          <div class="depto">Dir. Gral. de Org. Económicos Financieros Internacionales y Política Financiera · Min. de Hacienda</div>
-          <div class="roles">
-            <div class="rol-fila"><span class="etiqueta-rol">Coord. Sectorial</span><span class="nombre-rol">D. Osa Nfono</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal</span><span class="nombre-rol">A. Bindang Ela</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal Adj.</span><span class="nombre-rol">M. Nzang Obono</span></div>
-          </div>
-        </div>
-        <div class="tarjeta-subcomite">
-          <div class="letra">Q</div>
-          <div class="nombre-sub">Igualdad de Género</div>
-          <div class="depto">Dir. Gral. de Igualdad de Género · Min. de Igualdad de Género y Asuntos Sociales</div>
-          <div class="roles">
-            <div class="rol-fila"><span class="etiqueta-rol">Coord. Sectorial</span><span class="nombre-rol">T. Ela Mangue</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal</span><span class="nombre-rol">N. Angue Nsue</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal Adj.</span><span class="nombre-rol">Y. Obama Ondó</span></div>
-          </div>
-        </div>
-        <div class="tarjeta-subcomite">
-          <div class="letra">R</div>
-          <div class="nombre-sub">Justicia</div>
-          <div class="depto">Dir. Gral. de Justicia · Min. de Justicia, Culto y Derechos Humanos</div>
-          <div class="roles">
-            <div class="rol-fila"><span class="etiqueta-rol">Coord. Sectorial</span><span class="nombre-rol">B. Nchama Nzo</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal</span><span class="nombre-rol">E. Esono Bibang</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal Adj.</span><span class="nombre-rol">K. Ondó Angue</span></div>
-          </div>
-        </div>
-        <div class="tarjeta-subcomite">
-          <div class="letra">U</div>
-          <div class="nombre-sub">Propiedad Intelectual</div>
-          <div class="depto">Dir. de Propiedad Intelectual del Consejo de Investigación Científica y Tecnológica (CICTE)</div>
-          <div class="roles">
-            <div class="rol-fila"><span class="etiqueta-rol">Coord. Sectorial</span><span class="nombre-rol">S. Nzo Ela</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal</span><span class="nombre-rol">J. Mangue Osa</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal Adj.</span><span class="nombre-rol">R. Nsue Ntutumu</span></div>
-          </div>
-        </div>
-        <div class="tarjeta-subcomite">
-          <div class="letra">W</div>
-          <div class="nombre-sub">Trabajo y Asuntos Sociales</div>
-          <div class="depto">Dir. Gral. de Trabajo · Min. de Trabajo y Formación Ocupacional</div>
-          <div class="roles">
-            <div class="rol-fila"><span class="etiqueta-rol">Coord. Sectorial</span><span class="nombre-rol">F. Obono Nzang</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal</span><span class="nombre-rol">C. Bindang Nchama</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal Adj.</span><span class="nombre-rol">L. Angue Esono</span></div>
-          </div>
-        </div>
-        <div class="tarjeta-subcomite">
-          <div class="letra">X</div>
-          <div class="nombre-sub">Turismo</div>
-          <div class="depto">Dir. Gral. de Promoción y Desarrollo Turístico · Min. de Información, Prensa, Cultura y Turismo</div>
-          <div class="roles">
-            <div class="rol-fila"><span class="etiqueta-rol">Coord. Sectorial</span><span class="nombre-rol">M. Ela Ndong</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal</span><span class="nombre-rol">A. Nfono Bibang</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal Adj.</span><span class="nombre-rol">V. Nzo Angue</span></div>
-          </div>
-        </div>
-        <div class="tarjeta-subcomite">
-          <div class="letra">Y</div>
-          <div class="nombre-sub">Derechos Humanos y Sociedad Civil</div>
-          <div class="depto">Dir. Gral. de Derechos Humanos · Min. de Justicia, Culto y Derechos Humanos</div>
-          <div class="roles">
-            <div class="rol-fila"><span class="etiqueta-rol">Coord. Sectorial</span><span class="nombre-rol">G. Nchama Obono</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal</span><span class="nombre-rol">P. Ela Mba</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal Adj.</span><span class="nombre-rol">D. Ntutumu Osa</span></div>
-          </div>
-        </div>
-        <div class="tarjeta-subcomite">
-          <div class="letra">Z</div>
-          <div class="nombre-sub">Información y Comunicación</div>
-          <div class="depto">Dir. Gral. de Televisión y Radio · Min. de Información, Prensa, Cultura y Turismo</div>
-          <div class="roles">
-            <div class="rol-fila"><span class="etiqueta-rol">Coord. Sectorial</span><span class="nombre-rol">N. Osa Ndong</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal</span><span class="nombre-rol">H. Angue Mangue</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal Adj.</span><span class="nombre-rol">I. Bibang Nzo</span></div>
-          </div>
-        </div>
-        <div class="tarjeta-subcomite">
-          <div class="letra">AA</div>
-          <div class="nombre-sub">Apoyo Gubernamental</div>
-          <div class="depto">Dir. de Coop. Inter-Universitaria (UNGE), Obras Públicas, INEGE y ANDEGE</div>
-          <div class="roles">
-            <div class="rol-fila"><span class="etiqueta-rol">Coord. Sectorial</span><span class="nombre-rol">O. Ela Nzang</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal</span><span class="nombre-rol">K. Nguema Ondó</span></div>
-            <div class="rol-fila"><span class="etiqueta-rol">P. Focal Adj.</span><span class="nombre-rol">T. Bindang Esono</span></div>
-          </div>
-        </div>
+      <div class="contador-subcomites" id="contador-subcomites"></div>
+      <div class="grid-subcomites" id="grid-subcomites">
+        <div style="grid-column:1/-1;text-align:center;color:var(--gris-texto);padding:24px;">Cargando subcomités...</div>
       </div>
     </div>
   </div>
@@ -2208,6 +1961,7 @@
   let directorioCache = [];
   let nombresSubcomitesDirectorio = {};
   let ministerioPorDireccionGeneral = {};
+  let subcomitesDetalleCache = {}; // { letra: { nombre, direccion_general, ministerio } }, para la vista de Subcomités
 
   const ETIQUETAS_ROL = {
     prefijoCN: 'Coordinador Nacional',
@@ -2324,6 +2078,9 @@
 
     (respSubcomites.data || []).forEach(s => {
       if (!nombresSubcomitesDirectorio[s.letra]) nombresSubcomitesDirectorio[s.letra] = s.nombre;
+      if (!subcomitesDetalleCache[s.letra]) {
+        subcomitesDetalleCache[s.letra] = { nombre: s.nombre, direccion_general: s.direccion_general || '', ministerio: s.ministerio || '' };
+      }
       if (s.direccion_general && !ministerioPorDireccionGeneral[s.direccion_general]) {
         ministerioPorDireccionGeneral[s.direccion_general] = s.ministerio || '';
       }
@@ -2336,9 +2093,92 @@
       'Comisión Nacional, Comité Técnico y puntos focales sectoriales · ' + directorioCache.length + ' puestos (' + registrados + ' registrados)';
 
     pintarDirectorio(document.getElementById('buscador-directorio').value);
+    pintarSubcomitesVista(document.getElementById('buscador-subcomites').value);
   }
 
   document.getElementById('buscador-directorio').addEventListener('input', (e) => pintarDirectorio(e.target.value));
+
+  // ============ SUBCOMITÉS: tarjetas con los nombres reales, actualizadas según se va
+  // registrando cada persona (usa los mismos datos ya cargados por cargarDirectorio). ============
+  function ordenRolesSubcomite(p) {
+    const c = p.codigo_acceso || '';
+    if (c.startsWith('CN-')) return 0;
+    if (c.startsWith('PFN-')) return 1;
+    if (c.startsWith('ML-')) return 2;
+    if (c.startsWith('CS-')) return 0;
+    if (c.endsWith('-ADJ')) return 2;
+    return 1;
+  }
+
+  function filaRolSubcomite(p) {
+    const registrado = p.nombre_completo && p.nombre_completo.trim() !== '';
+    const nombreMostrado = registrado ? p.nombre_completo : 'Pendiente de registro';
+    const claseNombre = registrado ? 'nombre-rol' : 'nombre-rol pendiente';
+    return '<div class="rol-fila"><span class="etiqueta-rol">' + escaparHtml(etiquetaRol(p.codigo_acceso)) +
+      '</span><span class="' + claseNombre + '">' + escaparHtml(nombreMostrado) + '</span></div>';
+  }
+
+  function pintarSubcomitesVista(filtro) {
+    const cont = document.getElementById('grid-subcomites');
+    const contador = document.getElementById('contador-subcomites');
+    if (!cont) return;
+    const texto = (filtro || '').trim().toLowerCase();
+    const tarjetas = [];
+
+    // Coordinación General: Coordinador Nacional + Punto(s) Focal(es) Nacional(es) + Enlace en Lisboa
+    const miembrosGeneral = directorioCache.filter(p => p.subcomite === 'GENERAL')
+      .slice().sort((a, b) => ordenRolesSubcomite(a) - ordenRolesSubcomite(b));
+    const textoGeneral = 'coordinación general enlace lisboa misión permanente ' +
+      miembrosGeneral.map(p => (p.nombre_completo || '') + ' ' + (p.codigo_acceso || '')).join(' ');
+    if (!texto || textoGeneral.toLowerCase().includes(texto)) {
+      tarjetas.push(
+        '<div class="tarjeta-subcomite coordinacion-general">' +
+          '<div class="letra">CG</div>' +
+          '<div class="nombre-sub">Coordinación General</div>' +
+          '<div class="depto">Oficina de la Lusofonía · Ministerio de Asuntos Exteriores, Cooperación Internacional y Diáspora — incluye el Enlace en Lisboa ante la Misión Permanente de Guinea Ecuatorial ante la CPLP</div>' +
+          '<div class="roles">' +
+            (miembrosGeneral.length ? miembrosGeneral.map(filaRolSubcomite).join('') : '<div class="rol-fila"><span class="nombre-rol pendiente">Sin puestos registrados todavía</span></div>') +
+          '</div>' +
+        '</div>'
+      );
+    }
+
+    // Los 27 subcomités sectoriales, ordenados alfabéticamente por nombre
+    const letras = Object.keys(subcomitesDetalleCache).sort((a, b) =>
+      (subcomitesDetalleCache[a].nombre || '').localeCompare(subcomitesDetalleCache[b].nombre || '', 'es'));
+
+    letras.forEach(letra => {
+      const detalle = subcomitesDetalleCache[letra];
+      const miembros = directorioCache.filter(p => p.subcomite === letra)
+        .slice().sort((a, b) => ordenRolesSubcomite(a) - ordenRolesSubcomite(b));
+      const depto = [detalle.direccion_general, detalle.ministerio].filter(Boolean).join(' · ');
+
+      const textoTarjeta = (letra + ' ' + (detalle.nombre || '') + ' ' + depto + ' ' +
+        miembros.map(p => (p.nombre_completo || '') + ' ' + (p.codigo_acceso || '')).join(' ')).toLowerCase();
+      if (texto && !textoTarjeta.includes(texto)) return;
+
+      tarjetas.push(
+        '<div class="tarjeta-subcomite">' +
+          '<div class="letra">' + escaparHtml(letra) + '</div>' +
+          '<div class="nombre-sub">' + escaparHtml(detalle.nombre || '') + '</div>' +
+          '<div class="depto">' + escaparHtml(depto) + '</div>' +
+          '<div class="roles">' +
+            (miembros.length ? miembros.map(filaRolSubcomite).join('') : '<div class="rol-fila"><span class="nombre-rol pendiente">Sin puestos registrados todavía</span></div>') +
+          '</div>' +
+        '</div>'
+      );
+    });
+
+    contador.textContent = texto
+      ? tarjetas.length + (tarjetas.length === 1 ? ' resultado' : ' resultados')
+      : (letras.length + 1) + ' tarjetas: la Coordinación General (con el Enlace en Lisboa) y los ' + letras.length + ' subcomités sectoriales';
+
+    cont.innerHTML = tarjetas.length
+      ? tarjetas.join('')
+      : '<div style="grid-column:1/-1;text-align:center;color:var(--gris-texto);padding:24px;">No se encontró ningún subcomité con ese criterio.</div>';
+  }
+
+  document.getElementById('buscador-subcomites').addEventListener('input', (e) => pintarSubcomitesVista(e.target.value));
 
   cargarDirectorio();
 
