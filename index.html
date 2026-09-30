@@ -1339,10 +1339,10 @@
         <div>
           <div class="publicar-caja">
             <textarea id="texto-nueva-publicacion" placeholder="Compartir una novedad con la red..."></textarea>
-            <div id="archivo-muro-elegido" style="display:none;font-size:12px;color:var(--gris-texto);margin-top:6px;"></div>
+            <div id="archivo-muro-elegido" style="display:none;margin-top:8px;"></div>
             <div class="fila-acciones">
-              <input type="file" id="input-archivo-muro" style="display:none" accept=".pdf,.doc,.docx">
-              <span style="font-size:12px;color:var(--gris-texto);cursor:pointer;" onclick="document.getElementById('input-archivo-muro').click()">📎 Adjuntar documento</span>
+              <input type="file" id="input-archivo-muro" style="display:none" accept="image/*">
+              <span style="font-size:12px;color:var(--gris-texto);cursor:pointer;" onclick="document.getElementById('input-archivo-muro').click()">🖼 Adjuntar imagen</span>
               <button class="btn-primario" id="btn-publicar-muro" style="padding:7px 16px;" onclick="publicarEnMuro()">Publicar</button>
             </div>
           </div>
@@ -2377,7 +2377,10 @@
     const aviso = document.getElementById('archivo-muro-elegido');
     if (archivoElegidoMuro) {
       aviso.style.display = 'block';
-      aviso.innerHTML = '📎 ' + escaparHtml(archivoElegidoMuro.name) + ' — <a href="#" onclick="quitarArchivoMuro();return false;">quitar</a>';
+      const urlPrevia = URL.createObjectURL(archivoElegidoMuro);
+      aviso.innerHTML =
+        '<img src="' + urlPrevia + '" style="max-width:160px;max-height:160px;border-radius:8px;display:block;margin-bottom:6px;">' +
+        '<a href="#" onclick="quitarArchivoMuro();return false;" style="font-size:12px;color:var(--gris-texto);">quitar imagen</a>';
     } else {
       aviso.style.display = 'none';
     }
@@ -2570,7 +2573,7 @@
       const avatarHtml = '<div class="avatar" style="width:34px;height:34px;font-size:11.5px;' + estiloAvatar + '">' + (p.autor_foto_url ? '' : iniciales(p.autor_nombre)) + '</div>';
       const textoHtml = p.texto ? '<div class="post-texto">' + escaparHtml(p.texto) + '</div>' : '';
       const adjuntoHtml = p.archivo_url
-        ? '<a class="adjunto-msg" href="' + p.archivo_url + '" target="_blank" rel="noopener" style="text-decoration:none;display:flex;margin-bottom:11px;">📄 ' + escaparHtml(p.archivo_nombre || 'Documento adjunto') + '</a>'
+        ? '<a href="' + p.archivo_url + '" target="_blank" rel="noopener" style="display:block;margin-bottom:11px;"><img src="' + p.archivo_url + '" alt="' + escaparHtml(p.archivo_nombre || 'Imagen') + '" style="max-width:100%;max-height:420px;border-radius:8px;display:block;"></a>'
         : '';
       const numComentarios = (comentariosMuroCache[p.id] || []).length;
       const btnBorrar = (esPropio || esModerador)
