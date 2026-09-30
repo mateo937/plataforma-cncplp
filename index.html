@@ -1121,11 +1121,12 @@
       <input class="buscador" placeholder="Buscar documentos...">
     </div>
     <div class="contenido">
-      <div class="zona-subida">
+      <div class="zona-subida" id="zona-subida-documento">
         <input type="file" id="input-archivo-documento" style="display:none" accept=".pdf,.doc,.docx">
         <button class="btn-primario" onclick="abrirModalDocumento()">Cargar documento (.pdf, .doc, .docx)</button>
         <p>El archivo se sube a la carpeta que tenga abierta. Al pulsar "Abrir" en un documento, se descargará o abrirá con la aplicación predeterminada de su dispositivo.</p>
       </div>
+      <p id="aviso-solo-lectura" style="display:none;color:var(--gris-texto);font-size:13px;margin:0 0 14px;">Esta carpeta es de solo lectura para su perfil: puede abrir los documentos, pero no cargar nuevos.</p>
 
       <div class="dos-columnas-docs">
         <div class="lista-carpetas-lateral" id="lista-carpetas-lateral">
@@ -1743,19 +1744,34 @@
   });
 
   // ============ DOCUMENTOS CONECTADOS A LA BASE DE DATOS Y AL ALMACÉN DE ARCHIVOS REAL ============
-  // Carpetas: cada subcomité (27) tiene la suya propia (clave = letra), más una carpeta
-  // "Coordinación General" (clave = 'GENERAL'). El acceso se decide según usuarioActual:
-  //  - Coordinador Nacional (código empieza por "CN-"): ve y puede subir a TODAS las carpetas.
-  //  - Puntos Focales Nacionales / Enlace en Lisboa (usuarioActual.subcomite === 'GENERAL'):
-  //    solo ven la carpeta "Coordinación General".
-  //  - Coordinador Sectorial / Punto Focal / Punto Focal Adjunto: solo ven la carpeta de su
-  //    propio subcomité (usuarioActual.subcomite).
+  // Carpetas: cada subcomité (27) tiene la suya propia (clave = letra), más "Coordinación
+  // General" (clave = 'GENERAL') y "Enlace con la Misión Permanente" (clave = 'ENLACE').
+  // El acceso se decide según usuarioActual:
+  //  - "Coordinación General": la ve TODO el mundo, pero solo pueden subir ahí el Coordinador
+  //    Nacional (código "CN-") y los Puntos Focales Nacionales (código "PFN-"); el resto
+  //    (Enlace en Lisboa, Coordinadores Sectoriales, Puntos Focales y sus Adjuntos) solo
+  //    pueden abrir lo que ya hay.
+  //  - "Enlace con la Misión Permanente": acceso total (ver y subir) solo para el Enlace en
+  //    Lisboa (código "ML-") y los miembros de la Coordinación General (Coordinador Nacional
+  //    y Puntos Focales Nacionales); el resto no la ve.
+  //  - Coordinador Nacional y Puntos Focales Nacionales: además ven y pueden subir en TODAS
+  //    las carpetas de subcomités.
+  //  - Coordinador Sectorial / Punto Focal / Punto Focal Adjunto: además de Coordinación
+  //    General (solo lectura), ven y pueden subir en la carpeta de su propio subcomité
+  //    (usuarioActual.subcomite).
+  //  - Enlace en Lisboa (usuarioActual.subcomite === 'GENERAL', código "ML-"): ve Coordinación
+  //    General en solo lectura, y tiene acceso total a "Enlace con la Misión Permanente".
   // Nota: esta restricción se aplica solo en pantalla (oculta lo que no corresponde), tal y
   // como se decidió; no sustituye una restricción real a nivel de base de datos.
   let nombresCarpetas = {};
   let carpetasVisibles = [];
+  let carpetasConSubida = [];
   let carpetaActual = null;
   const CUBO_STORAGE = 'documentos';
+
+  function puedeSubirEnCarpeta(clave) {
+    return carpetasConSubida.indexOf(clave) !== -1;
+  }
 
   async function construirListaCarpetas() {
     const contenedor = document.getElementById('lista-carpetas-lateral');
@@ -1771,33 +1787,37 @@
     const nombresPorLetra = {};
     (data || []).forEach(s => { if (!nombresPorLetra[s.letra]) nombresPorLetra[s.letra] = s.nombre; });
 
-    nombresCarpetas = { GENERAL: 'Coordinación General' };
+    nombresCarpetas = { GENERAL: 'Coordinación General', ENLACE: 'Enlace con la Misión Permanente' };
     Object.keys(nombresPorLetra).forEach(letra => {
       nombresCarpetas[letra] = letra + '. ' + nombresPorLetra[letra];
     });
 
     const codigo = (usuarioActual && usuarioActual.codigo_acceso) || '';
     const subcomiteUsuario = usuarioActual && usuarioActual.subcomite;
+    const esCoordinacionGeneral = codigo.startsWith('CN-') || codigo.startsWith('PFN-');
+    const esEnlaceLisboa = codigo.startsWith('ML-');
 
-    if (codigo.startsWith('CN-')) {
-      // Coordinador Nacional: todas las carpetas, Coordinación General primero.
-      carpetasVisibles = ['GENERAL'].concat(Object.keys(nombresPorLetra));
-    } else if (subcomiteUsuario === 'GENERAL') {
-      // Puntos Focales Nacionales / Enlace en Lisboa: solo Coordinación General.
-      carpetasVisibles = ['GENERAL'];
-    } else if (subcomiteUsuario && nombresPorLetra[subcomiteUsuario] !== undefined) {
-      // Coordinador Sectorial / Punto Focal / Punto Focal Adjunto: solo su propio subcomité.
-      carpetasVisibles = [subcomiteUsuario];
-    } else {
-      carpetasVisibles = [];
+    // Coordinación General: visible para todos; solo suben CN y PFN.
+    carpetasVisibles = ['GENERAL'];
+    carpetasConSubida = esCoordinacionGeneral ? ['GENERAL'] : [];
+
+    // Enlace con la Misión Permanente: solo para CN, PFN y el Enlace en Lisboa, con acceso total.
+    if (esCoordinacionGeneral || esEnlaceLisboa) {
+      carpetasVisibles.push('ENLACE');
+      carpetasConSubida.push('ENLACE');
     }
 
-    if (carpetasVisibles.length === 0) {
-      contenedor.innerHTML = '<div style="text-align:center;color:var(--gris-texto);padding:14px 6px;font-size:13px;">No tiene carpetas asignadas.</div>';
-      carpetaActual = null;
-      document.getElementById('tabla-docs-cuerpo').innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--gris-texto);padding:24px;">No tiene carpetas asignadas.</td></tr>';
-      return;
+    if (esCoordinacionGeneral) {
+      // Coordinador Nacional y Puntos Focales Nacionales: también todas las de subcomités.
+      carpetasVisibles = carpetasVisibles.concat(Object.keys(nombresPorLetra));
+      carpetasConSubida = carpetasConSubida.concat(Object.keys(nombresPorLetra));
+    } else if (subcomiteUsuario && subcomiteUsuario !== 'GENERAL' && nombresPorLetra[subcomiteUsuario] !== undefined) {
+      // Coordinador Sectorial / Punto Focal / Punto Focal Adjunto: además, la de su subcomité.
+      carpetasVisibles.push(subcomiteUsuario);
+      carpetasConSubida.push(subcomiteUsuario);
     }
+    // Enlace en Lisboa (subcomite === 'GENERAL' y no CN/PFN): Coordinación General en modo
+    // lectura y Enlace con la Misión Permanente en acceso total, ya cubierto arriba.
 
     contenedor.innerHTML = carpetasVisibles.map((clave, i) =>
       `<div class="carpeta-lateral${i === 0 ? ' activa' : ''}" data-carpeta="${clave}">📁 ${escaparHtml(nombresCarpetas[clave])}</div>`
@@ -1818,6 +1838,13 @@
   async function pintarCarpeta(clave) {
     carpetaActual = clave;
     document.getElementById('ruta-carpeta-actual').innerHTML = '<span>Documentos</span> / ' + (nombresCarpetas[clave] || clave);
+
+    const puedeSubir = puedeSubirEnCarpeta(clave);
+    const zonaSubida = document.getElementById('zona-subida-documento');
+    const avisoSoloLectura = document.getElementById('aviso-solo-lectura');
+    if (zonaSubida) zonaSubida.style.display = puedeSubir ? '' : 'none';
+    if (avisoSoloLectura) avisoSoloLectura.style.display = puedeSubir ? 'none' : 'block';
+
     const cuerpo = document.getElementById('tabla-docs-cuerpo');
     cuerpo.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--gris-texto);padding:24px;">Cargando documentos...</td></tr>';
 
@@ -1836,6 +1863,9 @@
       const ext = (doc.nombre_archivo || '').split('.').pop().toLowerCase();
       const icono = ext === 'pdf' ? 'pdf' : 'doc';
       const conf = doc.confidencialidad || 'interno';
+      const btnBorrar = puedeSubir
+        ? `<button type="button" class="btn-abrir" style="margin-left:6px;color:#D32B1E;border-color:#D32B1E;" onclick="borrarDocumento(${doc.id}, '${(doc.url_archivo || '').replace(/'/g, "\\'")}')">Eliminar</button>`
+        : '';
       return `
       <tr>
         <td><div class="nombre-doc"><span class="icono-doc ${icono}">${icono.toUpperCase()}</span>${escaparHtml(doc.nombre_archivo)}</div></td>
@@ -1843,9 +1873,31 @@
         <td><span class="version-tag">${escaparHtml(doc.version || 'v1')}</span></td>
         <td><span class="conf-tag ${conf}">${ETIQUETAS_CONF[conf] || conf}</span></td>
         <td>${formatearFechaHora(doc.created_at)}</td>
-        <td><a class="btn-abrir" href="${doc.url_archivo}" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block;">Abrir</a></td>
+        <td style="white-space:nowrap;"><a class="btn-abrir" href="${doc.url_archivo}" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block;">Abrir</a>${btnBorrar}</td>
       </tr>`;
     }).join('');
+  }
+
+  async function borrarDocumento(id, urlArchivo) {
+    if (!confirm('¿Seguro que desea eliminar este documento? Esta acción no se puede deshacer.')) return;
+
+    // Extraer la ruta dentro del almacén a partir de la URL pública, para borrar también el archivo.
+    const marcador = '/object/public/' + CUBO_STORAGE + '/';
+    const idx = (urlArchivo || '').indexOf(marcador);
+    if (idx !== -1) {
+      const ruta = decodeURIComponent(urlArchivo.substring(idx + marcador.length));
+      const { error: errorAlmacen } = await db.storage.from(CUBO_STORAGE).remove([ruta]);
+      if (errorAlmacen) console.error(errorAlmacen);
+    }
+
+    const { error } = await db.from('documentos').delete().eq('id', id);
+    if (error) {
+      alert('No se pudo eliminar el documento. Inténtelo de nuevo.');
+      console.error(error);
+      return;
+    }
+
+    pintarCarpeta(carpetaActual);
   }
 
   document.getElementById('lista-carpetas-lateral').addEventListener('click', (e) => {
@@ -1864,8 +1916,8 @@
   });
 
   function abrirModalDocumento() {
-    if (!carpetasVisibles || carpetasVisibles.length === 0) {
-      console.warn('El usuario no tiene carpetas de documentos asignadas.');
+    if (!carpetasConSubida || carpetasConSubida.length === 0) {
+      console.warn('El usuario no tiene carpetas donde pueda cargar documentos.');
       return;
     }
     archivoElegido = null;
@@ -1877,13 +1929,13 @@
 
     const selector = document.getElementById('documento-carpeta');
     selector.innerHTML = '';
-    carpetasVisibles.forEach(clave => {
+    carpetasConSubida.forEach(clave => {
       const opt = document.createElement('option');
       opt.value = clave;
       opt.textContent = nombresCarpetas[clave];
       selector.appendChild(opt);
     });
-    selector.value = carpetaActual;
+    selector.value = puedeSubirEnCarpeta(carpetaActual) ? carpetaActual : carpetasConSubida[0];
 
     document.getElementById('modal-documento').style.display = 'flex';
   }
@@ -1905,7 +1957,9 @@
     const carpeta = document.getElementById('documento-carpeta').value;
     const version = document.getElementById('documento-version').value.trim() || 'v1';
     const confidencialidad = document.getElementById('documento-confidencialidad').value;
-    const subidoPor = (usuarioActual && (usuarioActual.nombre_completo || usuarioActual.rol)) || 'Usuario CN-CPLP';
+    const nombreQuienSube = (usuarioActual && (usuarioActual.nombre_completo || usuarioActual.rol)) || 'Usuario CN-CPLP';
+    const rolQuienSube = (usuarioActual && typeof etiquetaRol === 'function') ? etiquetaRol(usuarioActual.codigo_acceso || '') : '';
+    const subidoPor = rolQuienSube ? (nombreQuienSube + ' (' + rolQuienSube + ')') : nombreQuienSube;
 
     const btn = document.getElementById('btn-subir-documento');
     btn.textContent = 'Subiendo...';
