@@ -1374,6 +1374,7 @@
   <div class="vista" id="vista-calendario">
     <div class="topbar">
       <div><h2>Calendario</h2><div class="fecha">Reuniones ordinarias y sectoriales</div></div>
+      <button class="btn-primario" onclick="abrirModalReunion()">+ Nueva reunión</button>
     </div>
     <div class="contenido">
       <div class="calendario-layout">
@@ -1385,22 +1386,41 @@
         <div>
           <div class="widget-lateral">
             <h3>Próximas reuniones</h3>
-            <div class="lista-eventos">
-              <div class="evento-item">
-                <div class="fecha-evento"><div class="dia-num">01</div><div class="mes-abr">Oct</div></div>
-                <div class="evento-info"><div class="titulo-evento">Reunión ordinaria del Comité Técnico</div><div class="detalle-evento">Preside: Coordinador Nacional · 27 subcomités</div></div>
-              </div>
-              <div class="evento-item">
-                <div class="fecha-evento"><div class="dia-num">14</div><div class="mes-abr">Oct</div></div>
-                <div class="evento-info"><div class="titulo-evento">Reunión Sectorial CPLP — Educación</div><div class="detalle-evento">Subcomité N · Secretariado CPLP</div></div>
-              </div>
-              <div class="evento-item">
-                <div class="fecha-evento"><div class="dia-num">22</div><div class="mes-abr">Oct</div></div>
-                <div class="evento-info"><div class="titulo-evento">Reunión de seguimiento — Salud</div><div class="detalle-evento">Subcomité V · Punto Focal + Adjunto</div></div>
-              </div>
+            <div class="lista-eventos" id="lista-eventos-real">
+              <div style="padding:14px 0;color:var(--gris-texto);font-size:13px;">Cargando reuniones...</div>
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: NUEVA REUNIÓN ============ -->
+  <div id="modal-reunion" style="display:none;position:fixed;inset:0;background:rgba(10,46,82,0.55);z-index:100;align-items:center;justify-content:center;">
+    <div style="background:var(--blanco);border-radius:10px;padding:24px;max-width:420px;width:92%;max-height:90vh;overflow-y:auto;">
+      <h3 style="margin:0 0 16px;color:var(--marino);font-family:'Source Serif 4',Georgia,'Times New Roman',serif;">Nueva reunión</h3>
+      <div class="campo-form">
+        <label>Título</label>
+        <input type="text" id="reunion-titulo" placeholder="Ej. Reunión sectorial de Salud">
+      </div>
+      <div class="campo-form">
+        <label>Fecha</label>
+        <input type="date" id="reunion-fecha">
+      </div>
+      <div class="campo-form">
+        <label>Subcomité (opcional)</label>
+        <select id="reunion-subcomite" style="width:100%;padding:10px 13px;border:1px solid var(--gris-linea);border-radius:7px;font-size:13.5px;font-family:inherit;background:var(--hueso);">
+          <option value="">General / Todos los subcomités</option>
+        </select>
+      </div>
+      <div class="campo-form">
+        <label>Descripción (opcional)</label>
+        <input type="text" id="reunion-descripcion" placeholder="Detalles de la reunión">
+      </div>
+      <div id="error-reunion" style="display:none;color:#D32B1E;font-size:13px;margin:-8px 0 12px;font-weight:600;"></div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn-abrir" style="flex:1;padding:10px;" onclick="cerrarModalReunion()">Cancelar</button>
+        <button class="btn-primario" id="btn-guardar-reunion" style="flex:1;" onclick="guardarReunion()">Guardar</button>
       </div>
     </div>
   </div>
@@ -1851,17 +1871,36 @@
     });
   });
 
-  // Calendario navegable con eventos reales por mes
+  // ============ CALENDARIO CONECTADO A LA BASE DE DATOS REAL ============
   const diasGrid = document.getElementById('dias-grid');
   const mesCabecera = document.getElementById('mes-cabecera-texto');
   const nombresMes = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-  const eventosPorMes = {
-    '2026-8': [26],       // septiembre 2026 (índice 8): reunión de seguimiento previa
-    '2026-9': [1, 14, 22] // octubre 2026 (índice 9): reunión ordinaria, sectorial educación, seguimiento salud
-  };
-  let mesActual = 9; // octubre (0-indexado)
-  let anioActual = 2026;
-  const HOY = { anio: 2026, mes: 8, dia: 26 }; // 26 de septiembre de 2026
+  const nombresMesAbr = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const hoyReal = new Date();
+  let mesActual = hoyReal.getMonth();
+  let anioActual = hoyReal.getFullYear();
+  const HOY = { anio: hoyReal.getFullYear(), mes: hoyReal.getMonth(), dia: hoyReal.getDate() };
+
+  let eventosPorMes = {};
+  let reunionesCache = [];
+  let subcomitesCache = [];
+
+  function parsearFecha(fechaTexto) {
+    // fechaTexto viene como 'YYYY-MM-DD' desde la base de datos
+    const [y, m, d] = fechaTexto.split('-').map(Number);
+    return { anio: y, mes: m - 1, dia: d };
+  }
+
+  function construirEventosPorMes() {
+    eventosPorMes = {};
+    reunionesCache.forEach(r => {
+      if (!r.fecha) return;
+      const f = parsearFecha(r.fecha);
+      const clave = f.anio + '-' + f.mes;
+      if (!eventosPorMes[clave]) eventosPorMes[clave] = [];
+      eventosPorMes[clave].push(f.dia);
+    });
+  }
 
   function pintarMes() {
     mesCabecera.textContent = nombresMes[mesActual] + ' ' + anioActual;
@@ -1890,6 +1929,113 @@
     }
   }
 
+  function pintarProximasReuniones() {
+    const cont = document.getElementById('lista-eventos-real');
+    const hoyISO = hoyReal.toISOString().slice(0, 10);
+    const proximas = reunionesCache.filter(r => r.fecha >= hoyISO).slice(0, 8);
+
+    if (proximas.length === 0) {
+      cont.innerHTML = '<div style="padding:14px 0;color:var(--gris-texto);font-size:13px;">No hay reuniones próximas. Añada una con el botón "+ Nueva reunión".</div>';
+      return;
+    }
+
+    cont.innerHTML = proximas.map(r => {
+      const f = parsearFecha(r.fecha);
+      const detalle = (r.subcomite ? 'Subcomité ' + r.subcomite : 'General') + (r.descripcion ? ' · ' + r.descripcion : '');
+      return '<div class="evento-item">' +
+        '<div class="fecha-evento"><div class="dia-num">' + String(f.dia).padStart(2, '0') + '</div><div class="mes-abr">' + nombresMesAbr[f.mes] + '</div></div>' +
+        '<div class="evento-info"><div class="titulo-evento">' + escaparHtml(r.titulo) + '</div><div class="detalle-evento">' + escaparHtml(detalle) + '</div></div>' +
+        '</div>';
+    }).join('');
+  }
+
+  function escaparHtml(texto) {
+    if (!texto) return '';
+    const div = document.createElement('div');
+    div.textContent = texto;
+    return div.innerHTML;
+  }
+
+  async function cargarReuniones() {
+    const { data, error } = await db.from('reuniones').select('*').order('fecha', { ascending: true });
+    if (error) { console.error(error); return; }
+    reunionesCache = data || [];
+    construirEventosPorMes();
+    pintarMes();
+    pintarProximasReuniones();
+  }
+
+  async function cargarSubcomitesParaSelector() {
+    const { data, error } = await db.from('Subcomites').select('letra,nombre').order('letra');
+    if (error) { console.error(error); return; }
+    // Evitar letras repetidas (subcomités con más de una dirección general)
+    const vistos = new Set();
+    subcomitesCache = (data || []).filter(s => {
+      if (vistos.has(s.letra)) return false;
+      vistos.add(s.letra);
+      return true;
+    });
+    const selector = document.getElementById('reunion-subcomite');
+    subcomitesCache.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.letra;
+      opt.textContent = s.letra + ' — ' + s.nombre;
+      selector.appendChild(opt);
+    });
+  }
+
+  function abrirModalReunion() {
+    document.getElementById('reunion-titulo').value = '';
+    document.getElementById('reunion-fecha').value = '';
+    document.getElementById('reunion-subcomite').value = '';
+    document.getElementById('reunion-descripcion').value = '';
+    document.getElementById('error-reunion').style.display = 'none';
+    document.getElementById('modal-reunion').style.display = 'flex';
+  }
+
+  function cerrarModalReunion() {
+    document.getElementById('modal-reunion').style.display = 'none';
+  }
+
+  async function guardarReunion() {
+    const titulo = document.getElementById('reunion-titulo').value.trim();
+    const fecha = document.getElementById('reunion-fecha').value;
+    const subcomite = document.getElementById('reunion-subcomite').value;
+    const descripcion = document.getElementById('reunion-descripcion').value.trim();
+    const errorEl = document.getElementById('error-reunion');
+    errorEl.style.display = 'none';
+
+    if (!titulo || !fecha) {
+      errorEl.textContent = 'Por favor, indique al menos el título y la fecha.';
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    const btn = document.getElementById('btn-guardar-reunion');
+    btn.textContent = 'Guardando...';
+    btn.disabled = true;
+
+    const { error } = await db.from('reuniones').insert({
+      titulo: titulo,
+      fecha: fecha,
+      subcomite: subcomite || null,
+      descripcion: descripcion || null
+    });
+
+    btn.textContent = 'Guardar';
+    btn.disabled = false;
+
+    if (error) {
+      errorEl.textContent = 'No se pudo guardar la reunión. Compruebe su conexión e inténtelo de nuevo.';
+      errorEl.style.display = 'block';
+      console.error(error);
+      return;
+    }
+
+    cerrarModalReunion();
+    cargarReuniones();
+  }
+
   document.getElementById('mes-anterior').addEventListener('click', () => {
     mesActual--;
     if (mesActual < 0) { mesActual = 11; anioActual--; }
@@ -1902,6 +2048,8 @@
   });
 
   pintarMes();
+  cargarReuniones();
+  cargarSubcomitesParaSelector();
 
   // ---------- MENÚ MÓVIL ----------
   const sidebarEl = document.querySelector('.sidebar');
