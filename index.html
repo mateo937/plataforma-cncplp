@@ -358,8 +358,17 @@
   .chat-header .nombre-chat-grande { font-size: 14px; font-weight: 600; }
   .chat-header .estado { font-size: 11.5px; color: var(--gris-texto); }
   .mensajes-cuerpo { flex: 1; padding: 18px; overflow-y: auto; display: flex; flex-direction: column; gap: 13px; }
-  .msg-burbuja { max-width: 60%; }
+  .msg-burbuja { max-width: 60%; position: relative; }
   .msg-burbuja.propio { align-self: flex-end; }
+  .btn-borrar-msg {
+    position: absolute; top: -4px; right: -4px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--blanco); border: 1px solid var(--gris-linea);
+    font-size: 10px; line-height: 1; cursor: pointer;
+    display: none; align-items: center; justify-content: center;
+    color: #D32B1E;
+  }
+  .msg-burbuja:hover .btn-borrar-msg { display: flex; }
   .msg-burbuja .autor { font-size: 11px; color: var(--gris-texto); margin-bottom: 3px; }
   .msg-burbuja .texto-burbuja {
     background: var(--hueso);
@@ -1458,6 +1467,19 @@
     return partes.slice(0, 2).map(p => p[0].toUpperCase()).join('') || '··';
   }
 
+  function pintarAvatarEnElemento(elemento, urlFoto, textoIniciales) {
+    if (!elemento) return;
+    if (urlFoto) {
+      elemento.textContent = '';
+      elemento.style.backgroundImage = 'url(\'' + urlFoto.replace(/'/g, "\\'") + '\')';
+      elemento.style.backgroundSize = 'cover';
+      elemento.style.backgroundPosition = 'center';
+    } else {
+      elemento.style.backgroundImage = '';
+      elemento.textContent = textoIniciales;
+    }
+  }
+
   function pintarUsuarioEnSidebar(datos) {
     const nombreEl = document.getElementById('nombre-usuario-sidebar');
     const rolEl = document.getElementById('rol-usuario-sidebar');
@@ -1465,7 +1487,7 @@
     const nombreVisible = datos.nombre_completo || datos.rol || 'Usuario';
     if (nombreEl) nombreEl.textContent = nombreVisible;
     if (rolEl) rolEl.textContent = datos.rol || '';
-    if (avatarEl) avatarEl.textContent = iniciales(nombreVisible);
+    pintarAvatarEnElemento(avatarEl, datos.foto_url, iniciales(nombreVisible));
   }
 
   function guardarSesionYEntrar(datos) {
@@ -1739,6 +1761,7 @@
       return;
     }
     const codigoPropio = usuarioActual && usuarioActual.codigo_acceso;
+    const esModerador = codigoPropio && codigoPropio.startsWith('CN-');
     cuerpo.innerHTML = mensajesCacheChat.map(m => {
       const esPropio = m.remitente_codigo && codigoPropio && m.remitente_codigo === codigoPropio;
       const adjunto = m.archivo_url
@@ -1746,9 +1769,35 @@
         : '';
       const textoMsg = m.contenido ? `<div class="texto-burbuja">${escaparHtml(m.contenido)}</div>` : '';
       const autor = esPropio ? '' : `<div class="autor">${escaparHtml(m.remitente_nombre || 'Usuario')}${m.remitente_rol ? ' · ' + escaparHtml(m.remitente_rol) : ''}</div>`;
-      return `<div class="msg-burbuja${esPropio ? ' propio' : ''}">${autor}${textoMsg}${adjunto}<div class="hora-msg">${formatearHoraMensaje(m.created_at)}</div></div>`;
+      const btnBorrar = (esPropio || esModerador)
+        ? `<button type="button" class="btn-borrar-msg" title="Eliminar mensaje" onclick="borrarMensajeChat(${m.id}, ${m.archivo_url ? "'" + m.archivo_url.replace(/'/g, "\\'") + "'" : 'null'})">🗑</button>`
+        : '';
+      return `<div class="msg-burbuja${esPropio ? ' propio' : ''}">${btnBorrar}${autor}${textoMsg}${adjunto}<div class="hora-msg">${formatearHoraMensaje(m.created_at)}</div></div>`;
     }).join('');
     cuerpo.scrollTop = cuerpo.scrollHeight;
+  }
+
+  async function borrarMensajeChat(id, urlArchivo) {
+    if (!confirm('¿Eliminar este mensaje? Esta acción no se puede deshacer.')) return;
+
+    if (urlArchivo) {
+      const marcador = '/object/public/' + CUBO_STORAGE + '/';
+      const idx = urlArchivo.indexOf(marcador);
+      if (idx !== -1) {
+        const ruta = decodeURIComponent(urlArchivo.substring(idx + marcador.length));
+        const { error: errorAlmacen } = await db.storage.from(CUBO_STORAGE).remove([ruta]);
+        if (errorAlmacen) console.error(errorAlmacen);
+      }
+    }
+
+    const { error } = await db.from('mensajes').delete().eq('id', id);
+    if (error) {
+      alert('No se pudo eliminar el mensaje. Inténtelo de nuevo.');
+      console.error(error);
+      return;
+    }
+
+    if (grupoActualChat) cargarMensajesGrupo(grupoActualChat, false);
   }
 
   async function cargarMensajesGrupo(clave, silencioso) {
@@ -2183,13 +2232,17 @@
       const registrado = p.nombre_completo && p.nombre_completo.trim() !== '';
       const nombreMostrado = registrado ? p.nombre_completo : 'Pendiente de registro';
       const inicialesP = registrado ? iniciales(p.nombre_completo) : '··';
+      const estiloAvatar = p.foto_url
+        ? 'background-image:url(\'' + p.foto_url.replace(/'/g, "\\'") + '\');background-size:cover;background-position:center;'
+        : '';
+      const avatarHtml = '<div class="avatar" style="width:30px;height:30px;font-size:10.5px;' + estiloAvatar + '">' + (p.foto_url ? '' : inicialesP) + '</div>';
       const nombreSub = p.subcomite === 'GENERAL'
         ? 'Coordinación General'
         : (p.subcomite + '. ' + (nombresSubcomitesDirectorio[p.subcomite] || ''));
       const claseRol = p.subcomite === 'GENERAL' ? 'rol-tag nacional' : 'rol-tag';
       const estiloFila = registrado ? '' : ' style="opacity:0.55;"';
       return '<tr' + estiloFila + '>' +
-        '<td><div class="persona-nombre"><div class="avatar" style="width:30px;height:30px;font-size:10.5px;">' + inicialesP + '</div>' + escaparHtml(nombreMostrado) + '</div></td>' +
+        '<td><div class="persona-nombre">' + avatarHtml + escaparHtml(nombreMostrado) + '</div></td>' +
         '<td><span class="' + claseRol + '">' + escaparHtml(etiquetaRol(p.codigo_acceso)) + '</span></td>' +
         '<td>' + escaparHtml(nombreSub) + '</td>' +
         '<td>' + (registrado ? escaparHtml(p.correo || '—') : '—') + '</td>' +
@@ -2200,7 +2253,7 @@
 
   async function cargarDirectorio() {
     const [respPersonas, respSubcomites] = await Promise.all([
-      db.from('Puntos Focales').select('codigo_acceso,nombre_completo,correo,telefono,subcomite,rol').order('codigo_acceso'),
+      db.from('Puntos Focales').select('codigo_acceso,nombre_completo,correo,telefono,subcomite,rol,foto_url').order('codigo_acceso'),
       db.from('Subcomites').select('letra,nombre')
     ]);
 
