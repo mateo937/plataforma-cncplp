@@ -361,6 +361,39 @@
   }
   .icono-doc.pdf { background: #B4402A; }
   .icono-doc.doc { background: var(--marino-claro); }
+  .icono-doc.msg { background: var(--verde-ge); }
+  .icono-doc.reunion { background: #92720a; }
+  .icono-doc.mural { background: var(--rojo-ge); }
+
+  /* ---------- CAMPANA DE NOTIFICACIONES ---------- */
+  .campana-notif-wrap { position: fixed; top: 16px; right: 22px; z-index: 60; }
+  .campana-notif {
+    position: relative; width: 40px; height: 40px; border-radius: 50%;
+    background: var(--blanco); border: 1px solid var(--gris-linea);
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    color: var(--marino); box-shadow: 0 2px 8px rgba(10,46,82,0.14);
+  }
+  .campana-notif:hover { background: var(--hueso); }
+  .campana-badge {
+    position: absolute; top: -4px; right: -4px;
+    background: var(--rojo-ge); color: white; font-size: 10px; font-weight: 700;
+    min-width: 17px; height: 17px; border-radius: 9px; display: flex; align-items: center; justify-content: center;
+    padding: 0 4px; line-height: 1;
+  }
+  .panel-notif {
+    position: absolute; top: 48px; right: 0; width: 340px; max-width: calc(100vw - 32px); max-height: 440px; overflow-y: auto;
+    background: var(--blanco); border: 1px solid var(--gris-linea); border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(10,46,82,0.2);
+    display: none;
+  }
+  .panel-notif.abierto { display: block; }
+  .panel-notif .cabecera-notif { padding: 13px 16px; border-bottom: 1px solid var(--gris-linea); font-weight: 700; font-size: 13px; color: var(--marino); font-family: 'Source Serif 4', Georgia, serif; }
+  .item-actividad { display: flex; gap: 11px; align-items: flex-start; padding: 11px 15px; border-bottom: 1px solid var(--gris-linea); cursor: pointer; }
+  .item-actividad:last-child { border-bottom: none; }
+  .item-actividad:hover { background: var(--hueso); }
+  .item-actividad .texto-actividad { font-size: 12.5px; line-height: 1.4; }
+  .item-actividad .texto-actividad .quien { font-weight: 600; }
+  .item-actividad .hora-actividad { font-size: 11px; color: var(--gris-texto); margin-top: 3px; }
   .nombre-doc { display: flex; align-items: center; gap: 10px; font-weight: 600; }
   .version-tag { font-size: 11px; color: var(--gris-texto); background: var(--hueso); padding: 2px 8px; border-radius: 12px; }
   .conf-tag { font-size: 10.5px; font-weight: 600; padding: 2px 9px; border-radius: 12px; display: inline-block; }
@@ -713,6 +746,18 @@
 </div>
 
 <div id="app-completa" class="app-oculta">
+
+<div class="campana-notif-wrap" id="campana-notif-wrap">
+  <div class="campana-notif" id="btn-campana-notif" title="Notificaciones">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+    <span class="campana-badge" id="campana-badge" style="display:none;">0</span>
+  </div>
+  <div class="panel-notif" id="panel-notif">
+    <div class="cabecera-notif">Actividad reciente</div>
+    <div id="lista-notif"><div style="padding:20px;text-align:center;color:var(--gris-texto);font-size:12.5px;">Cargando...</div></div>
+  </div>
+</div>
+
 <aside class="sidebar">
   <div class="brand">
     <div class="escudo-mini">
@@ -835,71 +880,26 @@
     <div class="topbar">
       <div>
         <h2>Panel de Mando del Comité Técnico</h2>
-        <div class="fecha">Sábado, 26 de septiembre de 2026</div>
+        <div class="fecha" id="fecha-panel-mando">Cargando fecha...</div>
       </div>
       <input class="buscador" placeholder="Buscar personas, documentos...">
     </div>
     <div class="contenido">
       <div class="resumen-grid">
-        <div class="stat"><div class="num">27</div><div class="label">Subcomités activos</div></div>
-        <div class="stat"><div class="num">50</div><div class="label">Puntos focales registrados</div></div>
-        <div class="stat alerta"><div class="num">6</div><div class="label">Subcomités con tareas atrasadas</div></div>
-        <div class="stat"><div class="num">1 oct</div><div class="label">Próxima reunión ordinaria</div></div>
+        <div class="stat"><div class="num" id="stat-subcomites">27</div><div class="label">Subcomités activos</div></div>
+        <div class="stat"><div class="num" id="stat-registrados">–</div><div class="label">Puntos focales registrados</div></div>
+        <div class="stat"><div class="num" id="stat-pendientes">–</div><div class="label">Puestos pendientes de registro</div></div>
+        <div class="stat"><div class="num" id="stat-proxima-reunion">–</div><div class="label">Próxima reunión ordinaria</div></div>
       </div>
 
       <div class="panel">
         <div class="panel-header">
-          <h3>Estado de los subcomités</h3>
-          <a href="#" onclick="irAVista(event,'subcomites')">Ver los 27 completos</a>
+          <h3>Actividad reciente</h3>
+          <span style="font-size:11.5px;color:var(--gris-texto);">Documentos, mensajes, reuniones y Mural</span>
         </div>
-        <div class="cuerpo-scroll">
-          <table class="tabla-subcomites">
-            <thead>
-              <tr><th>Subcomité</th><th>Punto Focal Sectorial</th><th>Estado</th><th>Última actividad</th></tr>
-            </thead>
-            <tbody>
-              <tr><td><strong>A.</strong> Asuntos Internos</td><td>Dir. Gral. de Política Interior</td><td><span class="estado-pill aldia"><span class="dot"></span>Al día</span></td><td>hace 3 horas</td></tr>
-              <tr><td><strong>B.</strong> Administración Pública</td><td>Dir. Gral. de la Función Pública</td><td><span class="estado-pill aldia"><span class="dot"></span>Al día</span></td><td>hace 1 día</td></tr>
-              <tr><td><strong>C.</strong> Agricultura</td><td>Dir. Gral. de Agricultura y Sanidad Vegetal</td><td><span class="estado-pill atrasado"><span class="dot"></span>Atrasado</span></td><td>hace 9 días</td></tr>
-              <tr><td><strong>D.</strong> Asuntos del Mar</td><td>Dir. Gral. de Puertos y Marina Mercante</td><td><span class="estado-pill pendiente"><span class="dot"></span>Pendiente</span></td><td>hace 4 días</td></tr>
-              <tr><td><strong>E.</strong> Asuntos Parlamentarios</td><td>Secretaría General de la Cámara de Diputados</td><td><span class="estado-pill aldia"><span class="dot"></span>Al día</span></td><td>hace 2 días</td></tr>
-              <tr><td><strong>F.</strong> Ciencia y Tecnología</td><td>Secretaría General del CICTE</td><td><span class="estado-pill aldia"><span class="dot"></span>Al día</span></td><td>hace 5 horas</td></tr>
-              <tr><td><strong>G.</strong> Comercio</td><td>Dir. Gral. de Comercio Interior</td><td><span class="estado-pill pendiente"><span class="dot"></span>Pendiente</span></td><td>hace 2 días</td></tr>
-              <tr><td><strong>H.</strong> Telecomunicaciones</td><td>Dir. Gral. de Telecomunicaciones</td><td><span class="estado-pill aldia"><span class="dot"></span>Al día</span></td><td>hace 1 día</td></tr>
-              <tr><td><strong>I.</strong> Transportes</td><td>Dir. Gral. de Transportes Terrestres</td><td><span class="estado-pill atrasado"><span class="dot"></span>Atrasado</span></td><td>hace 13 días</td></tr>
-              <tr><td><strong>J.</strong> Cultura</td><td>Dir. Gral. de Promoción Artística y Cultural</td><td><span class="estado-pill aldia"><span class="dot"></span>Al día</span></td><td>hace 1 día</td></tr>
-              <tr><td><strong>K.</strong> Defensa</td><td>Dir. Gral. de Cooperación Militar</td><td><span class="estado-pill aldia"><span class="dot"></span>Al día</span></td><td>hace 6 horas</td></tr>
-              <tr><td><strong>L.</strong> Juventud y Deporte</td><td>Dir. Gral. de Juventud</td><td><span class="estado-pill pendiente"><span class="dot"></span>Pendiente</span></td><td>hace 3 días</td></tr>
-              <tr><td><strong>M.</strong> Economía y Empresa</td><td>Dir. Gral. de Estrategia Económica</td><td><span class="estado-pill aldia"><span class="dot"></span>Al día</span></td><td>hace 8 horas</td></tr>
-              <tr><td><strong>N.</strong> Educación</td><td>Dir. Gral. de Cooperación Educativa</td><td><span class="estado-pill aldia"><span class="dot"></span>Al día</span></td><td>hace 5 horas</td></tr>
-              <tr><td><strong>O.</strong> Energía</td><td>Dir. Gral. de Electricidad y Energías Renovables</td><td><span class="estado-pill pendiente"><span class="dot"></span>Pendiente</span></td><td>hace 5 días</td></tr>
-              <tr><td><strong>P.</strong> Finanzas</td><td>Dir. Gral. de Org. Económicos Financieros</td><td><span class="estado-pill aldia"><span class="dot"></span>Al día</span></td><td>hace 6 horas</td></tr>
-              <tr><td><strong>Q.</strong> Igualdad de Género</td><td>Dir. Gral. de Igualdad de Género</td><td><span class="estado-pill pendiente"><span class="dot"></span>Pendiente</span></td><td>hace 4 días</td></tr>
-              <tr><td><strong>R.</strong> Justicia</td><td>Dir. Gral. de Justicia</td><td><span class="estado-pill aldia"><span class="dot"></span>Al día</span></td><td>hace 2 días</td></tr>
-              <tr><td><strong>S.</strong> Medio Ambiente</td><td>Dir. Gral. de Cambio Climático</td><td><span class="estado-pill pendiente"><span class="dot"></span>Pendiente</span></td><td>hace 3 días</td></tr>
-              <tr><td><strong>T.</strong> Pesca</td><td>Dir. Gral. de Economía Azul</td><td><span class="estado-pill atrasado"><span class="dot"></span>Atrasado</span></td><td>hace 11 días</td></tr>
-              <tr><td><strong>U.</strong> Propiedad Intelectual</td><td>Dir. de Propiedad Intelectual (CICTE)</td><td><span class="estado-pill aldia"><span class="dot"></span>Al día</span></td><td>hace 1 día</td></tr>
-              <tr><td><strong>V.</strong> Salud</td><td>Dir. Gral. de Salud Pública</td><td><span class="estado-pill aldia"><span class="dot"></span>Al día</span></td><td>hace 2 horas</td></tr>
-              <tr><td><strong>W.</strong> Trabajo y Asuntos Sociales</td><td>Dir. Gral. de Trabajo</td><td><span class="estado-pill atrasado"><span class="dot"></span>Atrasado</span></td><td>hace 10 días</td></tr>
-              <tr><td><strong>X.</strong> Turismo</td><td>Dir. Gral. de Promoción Turística</td><td><span class="estado-pill aldia"><span class="dot"></span>Al día</span></td><td>hace 1 día</td></tr>
-              <tr><td><strong>Y.</strong> Derechos Humanos y Sociedad Civil</td><td>Dir. Gral. de Derechos Humanos</td><td><span class="estado-pill atrasado"><span class="dot"></span>Atrasado</span></td><td>hace 8 días</td></tr>
-              <tr><td><strong>Z.</strong> Información y Comunicación</td><td>Dir. Gral. de Televisión</td><td><span class="estado-pill aldia"><span class="dot"></span>Al día</span></td><td>hace 4 horas</td></tr>
-              <tr><td><strong>AA.</strong> Apoyo Gubernamental</td><td>Dir. de Coop. Inter-Universitaria (UNGE)</td><td><span class="estado-pill atrasado"><span class="dot"></span>Atrasado</span></td><td>hace 15 días</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-header"><h3>Correo institucional recibido</h3><a href="#" onclick="irAVista(event,'mensajes')">Ver bandeja completa</a></div>
-        <div style="padding:6px;">
-          <div class="item-fila" style="display:flex;gap:12px;align-items:center;padding:11px 12px;">
-            <div class="icono-doc doc">DOC</div>
-            <div style="flex:1;"><div style="font-size:13.3px;font-weight:600;">Secretariado CPLP — Convocatoria Reunión Sectorial de Salud</div><div style="font-size:11.5px;color:var(--gris-texto);">Reenviado automáticamente desde cn-cplp@guineaecuatorial.gob.gn · hace 3 horas</div></div>
-          </div>
-          <div class="item-fila" style="display:flex;gap:12px;align-items:center;padding:11px 12px;">
-            <div class="icono-doc pdf">PDF</div>
-            <div style="flex:1;"><div style="font-size:13.3px;font-weight:600;">Plan Estratégico de Cooperación 2027 — Sector Educación</div><div style="font-size:11.5px;color:var(--gris-texto);">Reenviado automáticamente · hace 1 día</div></div>
+        <div class="cuerpo-scroll" style="max-height:480px;">
+          <div id="lista-actividad-panel" style="padding:4px 0;">
+            <div style="text-align:center;color:var(--gris-texto);padding:24px;">Cargando actividad...</div>
           </div>
         </div>
       </div>
@@ -2155,6 +2155,7 @@
 
     pintarDirectorio(document.getElementById('buscador-directorio').value);
     pintarSubcomitesVista(document.getElementById('buscador-subcomites').value);
+    if (typeof actualizarStatsPanelMando === 'function') actualizarStatsPanelMando();
   }
 
   document.getElementById('buscador-directorio').addEventListener('input', (e) => pintarDirectorio(e.target.value));
@@ -2397,6 +2398,36 @@
       boton.style.color = yaLeDioLike ? 'var(--marino)' : '';
       boton.style.fontWeight = yaLeDioLike ? '700' : '400';
     }
+    // Si la lista de "a quién le ha gustado" está abierta, se mantiene actualizada
+    const contLista = document.getElementById('lista-likes-' + id);
+    if (contLista && contLista.style.display !== 'none') pintarListaLikes(id);
+  }
+
+  // Busca el nombre real de la persona a partir de su código de acceso, usando el
+  // directorio ya cargado; si todavía no está disponible, muestra el código tal cual.
+  function nombrePorCodigoMuro(codigo) {
+    const persona = directorioCache.find(p => p.codigo_acceso === codigo);
+    return (persona && persona.nombre_completo && persona.nombre_completo.trim() !== '') ? persona.nombre_completo : codigo;
+  }
+
+  function pintarListaLikes(id) {
+    const cont = document.getElementById('lista-likes-' + id);
+    if (!cont) return;
+    const lista = likesMuroCache[id] || [];
+    if (lista.length === 0) {
+      cont.innerHTML = '<span style="color:var(--gris-texto);">Todavía nadie ha dado "me gusta".</span>';
+      return;
+    }
+    const nombres = lista.map(codigo => escaparHtml(nombrePorCodigoMuro(codigo)));
+    cont.innerHTML = '<strong>Les ha gustado a:</strong> ' + nombres.join(', ');
+  }
+
+  function toggleListaLikes(id) {
+    const cont = document.getElementById('lista-likes-' + id);
+    if (!cont) return;
+    const seAbre = cont.style.display === 'none';
+    cont.style.display = seAbre ? 'block' : 'none';
+    if (seAbre) pintarListaLikes(id);
   }
 
   // "Me gusta" al estilo Facebook: cada persona puede darlo una sola vez por publicación y
@@ -2437,13 +2468,39 @@
       lista.innerHTML = '<div style="font-size:12px;color:var(--gris-texto);padding:4px 0;">Sea el primero en comentar.</div>';
       return;
     }
-    lista.innerHTML = comentarios.map(c =>
-      '<div style="font-size:12.5px;padding:6px 0;border-top:1px solid var(--gris-linea);">' +
-      '<strong>' + escaparHtml(c.autor_nombre || 'Usuario') + '</strong>' +
-      (c.autor_rol ? ' <span style="color:var(--gris-texto);font-size:11px;">· ' + escaparHtml(c.autor_rol) + '</span>' : '') +
-      '<div>' + escaparHtml(c.contenido || '') + '</div>' +
-      '</div>'
-    ).join('');
+    // Puede borrar un comentario quien lo escribió, y también el Coordinador Nacional
+    // (CN), como moderador de todo el Mural.
+    const codigoPropio = usuarioActual && usuarioActual.codigo_acceso;
+    const esModerador = codigoPropio && codigoPropio.startsWith('CN-');
+    lista.innerHTML = comentarios.map(c => {
+      const puedeBorrar = esModerador || (codigoPropio && c.autor_codigo === codigoPropio);
+      const btnBorrar = puedeBorrar
+        ? '<span onclick="borrarComentarioMuro(' + c.id + ',' + id + ')" style="float:right;cursor:pointer;color:#D32B1E;font-size:11px;" title="Eliminar comentario">🗑</span>'
+        : '';
+      return '<div style="font-size:12.5px;padding:6px 0;border-top:1px solid var(--gris-linea);">' +
+        btnBorrar +
+        '<strong>' + escaparHtml(c.autor_nombre || 'Usuario') + '</strong>' +
+        (c.autor_rol ? ' <span style="color:var(--gris-texto);font-size:11px;">· ' + escaparHtml(c.autor_rol) + '</span>' : '') +
+        '<div>' + escaparHtml(c.contenido || '') + '</div>' +
+        '</div>';
+    }).join('');
+  }
+
+  async function borrarComentarioMuro(idComentario, idPost) {
+    if (!confirm('¿Eliminar este comentario? Esta acción no se puede deshacer.')) return;
+    const { error } = await db.from('muro_comentarios').delete().eq('id', idComentario);
+    if (error) {
+      alert('No se pudo eliminar el comentario. Inténtelo de nuevo.');
+      console.error(error);
+      return;
+    }
+    if (comentariosMuroCache[idPost]) {
+      comentariosMuroCache[idPost] = comentariosMuroCache[idPost].filter(c => c.id !== idComentario);
+    }
+    pintarComentariosPost(idPost);
+    const numComentarios = (comentariosMuroCache[idPost] || []).length;
+    const contadorEl = document.getElementById('contador-comentarios-' + idPost);
+    if (contadorEl) contadorEl.textContent = numComentarios + (numComentarios === 1 ? ' comentario' : ' comentarios');
   }
 
   async function enviarComentario(id) {
@@ -2503,9 +2560,13 @@
         '</div>' +
         textoHtml + adjuntoHtml +
         '<div class="post-acciones">' +
-        '<div class="post-accion" id="btn-like-' + p.id + '" style="cursor:pointer;" onclick="darLikePost(' + p.id + ')">👍 <span id="likes-' + p.id + '">' + ((likesMuroCache[p.id] || []).length) + '</span></div>' +
-        '<div class="post-accion" style="cursor:pointer;" onclick="toggleComentariosPost(' + p.id + ')">💬 ' + numComentarios + (numComentarios === 1 ? ' comentario' : ' comentarios') + '</div>' +
+        '<div class="post-accion">' +
+          '<span id="btn-like-' + p.id + '" style="cursor:pointer;" onclick="darLikePost(' + p.id + ')">👍 Me gusta</span>' +
+          '<span style="cursor:pointer;text-decoration:underline;text-decoration-style:dotted;" onclick="toggleListaLikes(' + p.id + ')" title="Ver quién ha dado me gusta">(<span id="likes-' + p.id + '">' + ((likesMuroCache[p.id] || []).length) + '</span>)</span>' +
         '</div>' +
+        '<div class="post-accion" style="cursor:pointer;" onclick="toggleComentariosPost(' + p.id + ')">💬 <span id="contador-comentarios-' + p.id + '">' + numComentarios + (numComentarios === 1 ? ' comentario' : ' comentarios') + '</span></div>' +
+        '</div>' +
+        '<div id="lista-likes-' + p.id + '" style="display:none;font-size:11.5px;padding:6px 0 0;line-height:1.5;"></div>' +
         '<div class="comentarios-post" id="comentarios-' + p.id + '" style="display:none;border-top:1px solid var(--gris-linea);margin-top:10px;padding-top:8px;">' +
         '<div id="lista-comentarios-' + p.id + '"></div>' +
         '<div style="display:flex;gap:8px;margin-top:8px;">' +
@@ -2691,6 +2752,7 @@
     construirEventosPorMes();
     pintarMes();
     pintarProximasReuniones();
+    if (typeof actualizarStatsPanelMando === 'function') actualizarStatsPanelMando();
   }
 
   async function cargarSubcomitesParaSelector() {
@@ -2863,6 +2925,142 @@
   document.querySelectorAll('.item-nav[data-vista]').forEach(link => {
     link.addEventListener('click', cerrarMenuMovil);
   });
+
+  // ============ ACTIVIDAD RECIENTE Y CAMPANA DE NOTIFICACIONES ============
+  // Une en una sola lista, ordenada por fecha, los últimos movimientos reales de la
+  // plataforma: documentos subidos, mensajes enviados, reuniones creadas y publicaciones
+  // del Mural. Esta misma lista alimenta tanto el panel "Actividad reciente" del Panel de
+  // Mando como el desplegable de la campana de notificaciones (arriba a la derecha, visible
+  // en toda la web). No hay notificaciones "push" del navegador: es un aviso dentro de la
+  // propia app, con un número de novedades desde la última vez que cada persona abrió la
+  // campana (ese "última vez" se guarda en este dispositivo, no en la base de datos).
+  let actividadCache = [];
+
+  function filaActividad(item) {
+    return '<div class="item-actividad" onclick="irAVista(event,\'' + item.vista + '\');document.getElementById(\'panel-notif\').classList.remove(\'abierto\');">' +
+      '<div class="icono-doc ' + item.tipo + '">' + item.icono + '</div>' +
+      '<div><div class="texto-actividad">' + item.texto + '</div><div class="hora-actividad">' + tiempoRelativo(item.fecha) + '</div></div>' +
+      '</div>';
+  }
+
+  function pintarActividad() {
+    const vacio = '<div style="padding:22px;text-align:center;color:var(--gris-texto);font-size:12.5px;">Todavía no hay actividad registrada.</div>';
+    const destinoPanel = document.getElementById('lista-actividad-panel');
+    if (destinoPanel) destinoPanel.innerHTML = actividadCache.length ? actividadCache.slice(0, 20).map(filaActividad).join('') : vacio;
+    const destinoNotif = document.getElementById('lista-notif');
+    if (destinoNotif) destinoNotif.innerHTML = actividadCache.length ? actividadCache.slice(0, 15).map(filaActividad).join('') : vacio;
+    actualizarBadgeNotif();
+  }
+
+  async function cargarActividadReciente() {
+    const [rDocs, rMsgs, rReun, rMuro] = await Promise.all([
+      db.from('documentos').select('id,created_at,nombre_archivo,subido_por').order('created_at', { ascending: false }).limit(15),
+      db.from('mensajes').select('id,created_at,remitente_nombre,contenido').order('created_at', { ascending: false }).limit(15),
+      db.from('reuniones').select('id,created_at,titulo').order('created_at', { ascending: false }).limit(15),
+      db.from('muro').select('id,created_at,autor_nombre,texto').order('created_at', { ascending: false }).limit(15)
+    ]);
+
+    const items = [];
+    (rDocs.data || []).forEach(d => items.push({
+      tipo: 'doc', icono: 'DOC', vista: 'documentos', fecha: d.created_at,
+      texto: '<span class="quien">' + escaparHtml((d.subido_por || 'Alguien').split(' (')[0]) + '</span> subió el documento «' + escaparHtml(d.nombre_archivo || '') + '»'
+    }));
+    (rMsgs.data || []).forEach(m => items.push({
+      tipo: 'msg', icono: 'MSG', vista: 'mensajes', fecha: m.created_at,
+      texto: '<span class="quien">' + escaparHtml(m.remitente_nombre || 'Alguien') + '</span> envió un mensaje' +
+        (m.contenido ? ': «' + escaparHtml(m.contenido.slice(0, 60)) + (m.contenido.length > 60 ? '…' : '') + '»' : ' con un archivo adjunto')
+    }));
+    (rReun.data || []).forEach(r => items.push({
+      tipo: 'reunion', icono: 'CAL', vista: 'calendario', fecha: r.created_at,
+      texto: 'Nueva reunión programada: «' + escaparHtml(r.titulo || '') + '»'
+    }));
+    (rMuro.data || []).forEach(p => items.push({
+      tipo: 'mural', icono: 'MUR', vista: 'muro', fecha: p.created_at,
+      texto: '<span class="quien">' + escaparHtml(p.autor_nombre || 'Alguien') + '</span> publicó en el Mural' +
+        (p.texto ? ': «' + escaparHtml(p.texto.slice(0, 60)) + (p.texto.length > 60 ? '…' : '') + '»' : '')
+    }));
+
+    items.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+    actividadCache = items.slice(0, 30);
+    pintarActividad();
+  }
+
+  function claveUltimaVistaNotif() {
+    return 'cnCplpUltimaActividadVista_' + (usuarioActual ? usuarioActual.codigo_acceso : 'anon');
+  }
+
+  function actualizarBadgeNotif() {
+    const badge = document.getElementById('campana-badge');
+    if (!badge) return;
+    let ultimaVista = null;
+    try { ultimaVista = localStorage.getItem(claveUltimaVistaNotif()); } catch (e) {}
+    const nuevos = ultimaVista
+      ? actividadCache.filter(a => new Date(a.fecha) > new Date(ultimaVista)).length
+      : actividadCache.length;
+    if (nuevos > 0) {
+      badge.style.display = 'flex';
+      badge.textContent = nuevos > 9 ? '9+' : String(nuevos);
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
+  const btnCampana = document.getElementById('btn-campana-notif');
+  if (btnCampana) {
+    btnCampana.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const panel = document.getElementById('panel-notif');
+      const seAbre = !panel.classList.contains('abierto');
+      panel.classList.toggle('abierto', seAbre);
+      if (seAbre && actividadCache.length) {
+        try { localStorage.setItem(claveUltimaVistaNotif(), actividadCache[0].fecha); } catch (e) {}
+        actualizarBadgeNotif();
+      }
+    });
+    document.addEventListener('click', (e) => {
+      const panel = document.getElementById('panel-notif');
+      const wrap = document.getElementById('campana-notif-wrap');
+      if (panel.classList.contains('abierto') && wrap && !wrap.contains(e.target)) {
+        panel.classList.remove('abierto');
+      }
+    });
+  }
+
+  // ============ ESTADÍSTICAS REALES DEL PANEL DE MANDO ============
+  function actualizarStatsPanelMando() {
+    const elSub = document.getElementById('stat-subcomites');
+    if (!elSub) return;
+
+    const numSubcomites = Object.keys(subcomitesDetalleCache).length;
+    if (numSubcomites) elSub.textContent = numSubcomites;
+
+    if (directorioCache.length) {
+      const registrados = directorioCache.filter(p => p.nombre_completo && p.nombre_completo.trim() !== '').length;
+      document.getElementById('stat-registrados').textContent = registrados;
+      document.getElementById('stat-pendientes').textContent = directorioCache.length - registrados;
+    }
+
+    if (reunionesCache) {
+      const hoyISO = new Date().toISOString().slice(0, 10);
+      const proxima = reunionesCache.filter(r => r.fecha >= hoyISO).sort((a, b) => a.fecha < b.fecha ? -1 : 1)[0];
+      const elReunion = document.getElementById('stat-proxima-reunion');
+      if (proxima) {
+        const f = parsearFecha(proxima.fecha);
+        elReunion.textContent = String(f.dia).padStart(2, '0') + ' ' + nombresMesAbr[f.mes];
+      } else {
+        elReunion.textContent = 'Ninguna';
+      }
+    }
+  }
+
+  const elFechaPanel = document.getElementById('fecha-panel-mando');
+  if (elFechaPanel) {
+    const textoFecha = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    elFechaPanel.textContent = textoFecha.charAt(0).toUpperCase() + textoFecha.slice(1);
+  }
+
+  cargarActividadReciente();
+  setInterval(cargarActividadReciente, 25000);
 </script>
 
 </body>
