@@ -2149,13 +2149,22 @@
       const claseRol = p.subcomite === 'GENERAL' ? 'rol-tag nacional' : 'rol-tag';
       const estiloFila = registrado ? '' : ' style="opacity:0.55;"';
 
-      // Extraer la Dirección General concreta del texto guardado en "rol" (p. ej. "Punto Focal
-      // Sectorial (Dirección General de Economía y Cuentas Nacionales)") y, con eso, buscar su
-      // ministerio en la tabla Subcomites.
-      const coincidenciaDG = (p.rol || '').match(/\(([^)]+)\)/);
-      const direccionGeneral = coincidenciaDG ? coincidenciaDG[1] : '';
-      const ministerio = direccionGeneral ? (ministerioPorDireccionGeneral[direccionGeneral] || '') : '';
-      const subInfo = [direccionGeneral, ministerio].filter(Boolean).join(' · ');
+      // Coordinador Nacional, Puntos Focales Nacionales y Coordinadores Sectoriales son
+      // personal de la Oficina de la Lusofonía (no de la Dirección General del subcomité).
+      // Solo el Punto Focal Sectorial y su Adjunto pertenecen a la Dirección General real,
+      // que se extrae del texto guardado en "rol" (p. ej. "Punto Focal Sectorial (Dirección
+      // General de Economía y Cuentas Nacionales)") y con eso se busca su ministerio en la
+      // tabla Subcomites.
+      let subInfo = '';
+      const codigoFila = p.codigo_acceso || '';
+      if (codigoFila.startsWith('CN-') || codigoFila.startsWith('PFN-') || codigoFila.startsWith('CS-')) {
+        subInfo = 'Oficina de la Lusofonía — Ministerio de Asuntos Exteriores, Cooperación Internacional y Diáspora';
+      } else if (codigoFila.startsWith('PF-')) {
+        const coincidenciaDG = (p.rol || '').match(/\(([^)]+)\)/);
+        const direccionGeneral = coincidenciaDG ? coincidenciaDG[1] : '';
+        const ministerio = direccionGeneral ? (ministerioPorDireccionGeneral[direccionGeneral] || '') : '';
+        subInfo = [direccionGeneral, ministerio].filter(Boolean).join(' · ');
+      }
       const subInfoHtml = subInfo
         ? '<div style="font-size:11px;color:var(--gris-texto);margin-top:2px;white-space:normal;max-width:280px;line-height:1.4;">' + escaparHtml(subInfo) + '</div>'
         : '';
