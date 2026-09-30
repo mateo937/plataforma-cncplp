@@ -1184,110 +1184,35 @@
   <!-- ============ MENSAJERÍA ============ -->
   <div class="vista" id="vista-mensajes">
     <div class="topbar">
-      <div><h2>Mensajería</h2><div class="fecha">Comunicación directa y por subcomité</div></div>
+      <div><h2>Mensajería</h2><div class="fecha">Grupos de coordinación por subcomité</div></div>
     </div>
     <div class="contenido">
       <div class="mensajes-layout">
         <div class="lista-chats">
-          <div class="tabs-chat">
-            <div class="tab-chat activo" data-lista="directas">Directas</div>
-            <div class="tab-chat" data-lista="grupos">Subcomités</div>
-          </div>
-          <div id="lista-directas">
-            <div class="chat-item seleccionado">
-              <div class="avatar" style="width:36px;height:36px;font-size:11px;">ME</div>
-              <div class="info">
-                <div class="nombre-chat">Dra. M. Ela Mangue <span class="hora">10:24</span></div>
-                <div class="preview">Le envío el informe actualizado del segundo trimestre</div>
-              </div>
-              <div class="punto-no-leido"></div>
-            </div>
-            <div class="chat-item">
-              <div class="avatar" style="width:36px;height:36px;font-size:11px;">PM</div>
-              <div class="info">
-                <div class="nombre-chat">P. Mba Nchama <span class="hora">ayer</span></div>
-                <div class="preview">Gracias por compartir el acta de la reunión</div>
-              </div>
-            </div>
-            <div class="chat-item">
-              <div class="avatar" style="width:36px;height:36px;font-size:11px;">DM</div>
-              <div class="info">
-                <div class="nombre-chat">D. Mangue Obiang <span class="hora">lun</span></div>
-                <div class="preview">¿Podemos hablar del plan de agricultura?</div>
-              </div>
-            </div>
-            <div class="chat-item">
-              <div class="avatar" style="width:36px;height:36px;font-size:11px;">GO</div>
-              <div class="info">
-                <div class="nombre-chat">G. Obiang Nsue <span class="hora">vie</span></div>
-                <div class="preview">Enviaré el acta firmada esta tarde</div>
-              </div>
-            </div>
-          </div>
-          <div id="lista-grupos" style="display:none;">
-            <div class="chat-item">
-              <div class="avatar" style="width:36px;height:36px;font-size:11px;background:var(--verde-ge);">V</div>
-              <div class="info">
-                <div class="nombre-chat">Subcomité de Salud <span class="hora">ayer</span></div>
-                <div class="preview">B. Nsue: Confirmado para el jueves</div>
-              </div>
-              <div class="punto-no-leido"></div>
-            </div>
-            <div class="chat-item">
-              <div class="avatar" style="width:36px;height:36px;font-size:11px;background:var(--verde-ge);">N</div>
-              <div class="info">
-                <div class="nombre-chat">Subcomité de Educación <span class="hora">lun</span></div>
-                <div class="preview">C. Nsue: Documento subido a la carpeta común</div>
-              </div>
-            </div>
-            <div class="chat-item">
-              <div class="avatar" style="width:36px;height:36px;font-size:11px;background:var(--verde-ge);">C</div>
-              <div class="info">
-                <div class="nombre-chat">Subcomité de Agricultura <span class="hora">10 sep</span></div>
-                <div class="preview">F. Nguema: Reunión reprogramada</div>
-              </div>
-            </div>
-            <div class="chat-item">
-              <div class="avatar" style="width:36px;height:36px;font-size:11px;background:var(--verde-ge);">K</div>
-              <div class="info">
-                <div class="nombre-chat">Subcomité de Defensa <span class="hora">2 sep</span></div>
-                <div class="preview">Cnel. Nchama: Recibido, gracias</div>
-              </div>
-            </div>
+          <div id="lista-grupos-chat">
+            <div style="text-align:center;color:var(--gris-texto);padding:14px 6px;font-size:13px;">Cargando grupos...</div>
           </div>
         </div>
 
         <div class="ventana-chat">
           <div class="chat-header">
-            <div class="avatar" style="width:36px;height:36px;font-size:11px;">ME</div>
+            <div class="avatar" style="width:36px;height:36px;font-size:11px;" id="avatar-grupo-chat">–</div>
             <div>
-              <div class="nombre-chat-grande">Dra. M. Ela Mangue</div>
-              <div class="estado">Punto Focal · Subcomité de Salud</div>
+              <div class="nombre-chat-grande" id="nombre-grupo-chat">Seleccione un grupo</div>
+              <div class="estado" id="estado-grupo-chat"></div>
             </div>
           </div>
-          <div class="mensajes-cuerpo">
-            <div class="msg-burbuja">
-              <div class="autor">Dra. M. Ela Mangue</div>
-              <div class="texto-burbuja">Buenos días. Ya revisé el informe sectorial y ajusté los datos del segundo trimestre.</div>
-              <div class="hora-msg">09:58</div>
-            </div>
-            <div class="msg-burbuja propio">
-              <div class="texto-burbuja">Perfecto, gracias. ¿Puede subir la nueva versión en la carpeta de Salud?</div>
-              <div class="hora-msg">10:05</div>
-            </div>
-            <div class="msg-burbuja">
-              <div class="autor">Dra. M. Ela Mangue</div>
-              <div class="texto-burbuja">Le envío el informe actualizado del segundo trimestre</div>
-              <div class="adjunto-msg">📄 Informe Sectorial — Salud Pública 2026.pdf</div>
-              <div class="hora-msg">10:24</div>
-            </div>
+          <div class="mensajes-cuerpo" id="mensajes-cuerpo">
+            <div style="text-align:center;color:var(--gris-texto);padding:24px;">Seleccione un grupo de la izquierda para ver los mensajes.</div>
           </div>
+          <div id="archivo-mensaje-elegido" style="display:none;font-size:12px;color:var(--gris-texto);padding:6px 15px 0;"></div>
           <div class="caja-escribir">
-            <button class="btn-clip">
+            <input type="file" id="input-archivo-mensaje" style="display:none" accept=".pdf,.doc,.docx">
+            <button class="btn-clip" id="btn-adjuntar-mensaje" onclick="elegirArchivoMensaje()" title="Adjuntar documento">
               <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5l-8.4 8.4a5 5 0 0 1-7.1-7.1l9-9a3.5 3.5 0 0 1 5 5l-9 9a2 2 0 0 1-2.8-2.8l8-8"/></svg>
             </button>
-            <input placeholder="Escribir un mensaje...">
-            <button class="btn-enviar">
+            <input id="input-texto-mensaje" placeholder="Escribir un mensaje..." disabled>
+            <button class="btn-enviar" id="btn-enviar-mensaje" onclick="enviarMensaje()">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
             </button>
           </div>
@@ -1550,6 +1475,7 @@
     document.getElementById('pantalla-acceso').style.display = 'none';
     document.getElementById('app-completa').style.display = 'flex';
     if (typeof construirListaCarpetas === 'function') construirListaCarpetas();
+    if (typeof construirListaGruposChat === 'function') construirListaGruposChat();
   }
 
   function mostrarErrorCodigo(mensaje) {
@@ -1688,6 +1614,7 @@
         document.getElementById('pantalla-acceso').style.display = 'none';
         document.getElementById('app-completa').style.display = 'flex';
         if (typeof construirListaCarpetas === 'function') construirListaCarpetas();
+        if (typeof construirListaGruposChat === 'function') construirListaGruposChat();
       } catch (e) {}
     }
   });
@@ -1719,28 +1646,223 @@
     });
   });
 
-  document.querySelectorAll('.tab-chat').forEach(tab => {
-    tab.addEventListener('click', () => {
-      const parent = tab.parentElement;
-      parent.querySelectorAll('.tab-chat').forEach(t => t.classList.remove('activo'));
-      tab.classList.add('activo');
-      const listaDirectas = document.getElementById('lista-directas');
-      const listaGrupos = document.getElementById('lista-grupos');
-      if (tab.dataset.lista === 'grupos') {
-        listaDirectas.style.display = 'none';
-        listaGrupos.style.display = 'block';
-      } else {
-        listaDirectas.style.display = 'block';
-        listaGrupos.style.display = 'none';
-      }
+  // ============ MENSAJERÍA CONECTADA A LA BASE DE DATOS REAL (grupos, no chats 1 a 1) ============
+  // Grupos: uno por cada subcomité (clave = letra), más "Coordinación General" (clave =
+  // 'COORDGENERAL') y "Enlace con la Misión Permanente" (clave = 'ENLACE'). Igual que en
+  // Documentos, el acceso se decide según usuarioActual y se aplica solo en pantalla:
+  //  - Coordinador Nacional y Puntos Focales Nacionales: ven y escriben en TODOS los grupos
+  //    (todos los subcomités, Coordinación General y Enlace).
+  //  - Coordinador Sectorial: ve y escribe en el grupo de su propio subcomité y en el de
+  //    "Coordinación General".
+  //  - Punto Focal y Punto Focal Adjunto: ven y escriben solo en el grupo de su propio
+  //    subcomité.
+  //  - Enlace en Lisboa: ve y escribe solo en el grupo "Enlace con la Misión Permanente".
+  // Ningún miembro de un subcomité ve los grupos de los demás subcomités.
+  let nombresGruposChat = {};
+  let gruposDisponiblesChat = [];
+  let grupoActualChat = null;
+  let mensajesCacheChat = [];
+  let archivoElegidoMensaje = null;
+  let intervaloMensajes = null;
+
+  async function construirListaGruposChat() {
+    const contenedor = document.getElementById('lista-grupos-chat');
+    contenedor.innerHTML = '<div style="text-align:center;color:var(--gris-texto);padding:14px 6px;font-size:13px;">Cargando grupos...</div>';
+
+    const { data, error } = await db.from('Subcomites').select('letra,nombre').order('letra');
+    if (error) {
+      contenedor.innerHTML = '<div style="text-align:center;color:#D32B1E;padding:14px 6px;font-size:13px;">No se pudieron cargar los grupos.</div>';
+      console.error(error);
+      return;
+    }
+
+    const nombresPorLetra = {};
+    (data || []).forEach(s => { if (!nombresPorLetra[s.letra]) nombresPorLetra[s.letra] = s.nombre; });
+
+    nombresGruposChat = { COORDGENERAL: 'Coordinación General', ENLACE: 'Enlace con la Misión Permanente' };
+    Object.keys(nombresPorLetra).forEach(letra => {
+      nombresGruposChat[letra] = letra + '. ' + nombresPorLetra[letra];
     });
+
+    const codigo = (usuarioActual && usuarioActual.codigo_acceso) || '';
+    const subcomiteUsuario = usuarioActual && usuarioActual.subcomite;
+
+    if (codigo.startsWith('CN-') || codigo.startsWith('PFN-')) {
+      gruposDisponiblesChat = ['COORDGENERAL', 'ENLACE'].concat(Object.keys(nombresPorLetra));
+    } else if (codigo.startsWith('ML-')) {
+      gruposDisponiblesChat = ['ENLACE'];
+    } else if (codigo.startsWith('CS-') && subcomiteUsuario && nombresPorLetra[subcomiteUsuario] !== undefined) {
+      gruposDisponiblesChat = [subcomiteUsuario, 'COORDGENERAL'];
+    } else if (subcomiteUsuario && subcomiteUsuario !== 'GENERAL' && nombresPorLetra[subcomiteUsuario] !== undefined) {
+      gruposDisponiblesChat = [subcomiteUsuario];
+    } else {
+      gruposDisponiblesChat = [];
+    }
+
+    if (gruposDisponiblesChat.length === 0) {
+      contenedor.innerHTML = '<div style="text-align:center;color:var(--gris-texto);padding:14px 6px;font-size:13px;">No tiene grupos asignados.</div>';
+      return;
+    }
+
+    contenedor.innerHTML = gruposDisponiblesChat.map((clave, i) =>
+      `<div class="chat-item${i === 0 ? ' seleccionado' : ''}" data-grupo="${clave}">
+        <div class="avatar" style="width:36px;height:36px;font-size:11px;background:var(--verde-ge);">${escaparHtml((nombresGruposChat[clave] || clave).charAt(0))}</div>
+        <div class="info"><div class="nombre-chat">${escaparHtml(nombresGruposChat[clave])}</div></div>
+      </div>`
+    ).join('');
+
+    abrirGrupoChat(gruposDisponiblesChat[0]);
+  }
+
+  document.getElementById('lista-grupos-chat').addEventListener('click', (e) => {
+    const item = e.target.closest('.chat-item');
+    if (!item) return;
+    document.querySelectorAll('#lista-grupos-chat .chat-item').forEach(i => i.classList.remove('seleccionado'));
+    item.classList.add('seleccionado');
+    abrirGrupoChat(item.dataset.grupo);
   });
 
-  document.querySelectorAll('.chat-item').forEach(item => {
-    item.addEventListener('click', () => {
-      document.querySelectorAll('.chat-item').forEach(i => i.classList.remove('seleccionado'));
-      item.classList.add('seleccionado');
+  function formatearHoraMensaje(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    const hoy = new Date();
+    const esHoy = d.toDateString() === hoy.toDateString();
+    return esHoy
+      ? d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
+      : d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) + ' ' + d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function pintarMensajesChat() {
+    const cuerpo = document.getElementById('mensajes-cuerpo');
+    if (mensajesCacheChat.length === 0) {
+      cuerpo.innerHTML = '<div style="text-align:center;color:var(--gris-texto);padding:24px;">No hay mensajes todavía. Escriba el primero.</div>';
+      return;
+    }
+    const codigoPropio = usuarioActual && usuarioActual.codigo_acceso;
+    cuerpo.innerHTML = mensajesCacheChat.map(m => {
+      const esPropio = m.remitente_codigo && codigoPropio && m.remitente_codigo === codigoPropio;
+      const adjunto = m.archivo_url
+        ? `<a class="adjunto-msg" href="${m.archivo_url}" target="_blank" rel="noopener" style="text-decoration:none;display:block;">📄 ${escaparHtml(m.archivo_nombre || 'Documento adjunto')}</a>`
+        : '';
+      const textoMsg = m.contenido ? `<div class="texto-burbuja">${escaparHtml(m.contenido)}</div>` : '';
+      const autor = esPropio ? '' : `<div class="autor">${escaparHtml(m.remitente_nombre || 'Usuario')}${m.remitente_rol ? ' · ' + escaparHtml(m.remitente_rol) : ''}</div>`;
+      return `<div class="msg-burbuja${esPropio ? ' propio' : ''}">${autor}${textoMsg}${adjunto}<div class="hora-msg">${formatearHoraMensaje(m.created_at)}</div></div>`;
+    }).join('');
+    cuerpo.scrollTop = cuerpo.scrollHeight;
+  }
+
+  async function cargarMensajesGrupo(clave, silencioso) {
+    const { data, error } = await db.from('mensajes').select('*').eq('grupo', clave).order('created_at', { ascending: true });
+    if (error) {
+      if (!silencioso) {
+        document.getElementById('mensajes-cuerpo').innerHTML = '<div style="text-align:center;color:#D32B1E;padding:24px;">No se pudieron cargar los mensajes.</div>';
+      }
+      console.error(error);
+      return;
+    }
+    const nuevos = data || [];
+    if (silencioso && nuevos.length === mensajesCacheChat.length) return;
+    mensajesCacheChat = nuevos;
+    pintarMensajesChat();
+  }
+
+  function abrirGrupoChat(clave) {
+    grupoActualChat = clave;
+    mensajesCacheChat = [];
+    document.getElementById('nombre-grupo-chat').textContent = nombresGruposChat[clave] || clave;
+    document.getElementById('estado-grupo-chat').textContent = 'Grupo de coordinación';
+    document.getElementById('avatar-grupo-chat').textContent = (nombresGruposChat[clave] || clave).charAt(0);
+    document.getElementById('mensajes-cuerpo').innerHTML = '<div style="text-align:center;color:var(--gris-texto);padding:24px;">Cargando mensajes...</div>';
+    document.getElementById('input-texto-mensaje').disabled = false;
+    quitarArchivoMensaje();
+    cargarMensajesGrupo(clave, false);
+
+    if (intervaloMensajes) clearInterval(intervaloMensajes);
+    intervaloMensajes = setInterval(() => {
+      if (grupoActualChat && document.getElementById('vista-mensajes').classList.contains('activa')) {
+        cargarMensajesGrupo(grupoActualChat, true);
+      }
+    }, 4000);
+  }
+
+  function elegirArchivoMensaje() {
+    document.getElementById('input-archivo-mensaje').click();
+  }
+
+  document.getElementById('input-archivo-mensaje').addEventListener('change', (e) => {
+    archivoElegidoMensaje = e.target.files[0] || null;
+    const aviso = document.getElementById('archivo-mensaje-elegido');
+    if (archivoElegidoMensaje) {
+      aviso.style.display = 'block';
+      aviso.innerHTML = '📎 ' + escaparHtml(archivoElegidoMensaje.name) + ' — <a href="#" onclick="quitarArchivoMensaje();return false;">quitar</a>';
+    } else {
+      aviso.style.display = 'none';
+    }
+  });
+
+  function quitarArchivoMensaje() {
+    archivoElegidoMensaje = null;
+    document.getElementById('input-archivo-mensaje').value = '';
+    document.getElementById('archivo-mensaje-elegido').style.display = 'none';
+  }
+
+  async function enviarMensaje() {
+    if (!grupoActualChat) return;
+    const inputTexto = document.getElementById('input-texto-mensaje');
+    const texto = inputTexto.value.trim();
+
+    if (!texto && !archivoElegidoMensaje) return;
+
+    const btn = document.getElementById('btn-enviar-mensaje');
+    btn.disabled = true;
+
+    let archivoNombre = null;
+    let archivoUrl = null;
+
+    if (archivoElegidoMensaje) {
+      const rutaArchivo = 'mensajes/' + grupoActualChat + '/' + Date.now() + '_' + archivoElegidoMensaje.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const { error: errorSubida } = await db.storage.from(CUBO_STORAGE).upload(rutaArchivo, archivoElegidoMensaje);
+      if (errorSubida) {
+        btn.disabled = false;
+        console.error(errorSubida);
+        alert('No se pudo adjuntar el archivo. Inténtelo de nuevo.');
+        return;
+      }
+      const { data: urlPublica } = db.storage.from(CUBO_STORAGE).getPublicUrl(rutaArchivo);
+      archivoNombre = archivoElegidoMensaje.name;
+      archivoUrl = urlPublica.publicUrl;
+    }
+
+    const rolQuienEnvia = (usuarioActual && typeof etiquetaRol === 'function') ? etiquetaRol(usuarioActual.codigo_acceso || '') : '';
+
+    const { error } = await db.from('mensajes').insert({
+      grupo: grupoActualChat,
+      remitente_nombre: (usuarioActual && usuarioActual.nombre_completo) || 'Usuario CN-CPLP',
+      remitente_rol: rolQuienEnvia,
+      remitente_codigo: usuarioActual && usuarioActual.codigo_acceso,
+      contenido: texto || null,
+      archivo_nombre: archivoNombre,
+      archivo_url: archivoUrl
     });
+
+    btn.disabled = false;
+
+    if (error) {
+      console.error(error);
+      alert('No se pudo enviar el mensaje. Inténtelo de nuevo.');
+      return;
+    }
+
+    inputTexto.value = '';
+    quitarArchivoMensaje();
+    cargarMensajesGrupo(grupoActualChat, false);
+  }
+
+  document.getElementById('input-texto-mensaje').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      enviarMensaje();
+    }
   });
 
   // ============ DOCUMENTOS CONECTADOS A LA BASE DE DATOS Y AL ALMACÉN DE ARCHIVOS REAL ============
