@@ -387,6 +387,9 @@
     display: none;
   }
   .panel-notif.abierto { display: block; }
+  .buscador-global-wrap { position: relative; }
+  .buscador-global-wrap .buscador { width: 100%; }
+  .buscador-global-wrap .panel-notif { top: calc(100% + 6px); right: 0; left: 0; width: auto; max-width: none; }
   .panel-notif .cabecera-notif { padding: 13px 16px; border-bottom: 1px solid var(--gris-linea); font-weight: 700; font-size: 13px; color: var(--marino); font-family: 'Source Serif 4', Georgia, serif; }
   .item-actividad { display: flex; gap: 11px; align-items: flex-start; padding: 11px 15px; border-bottom: 1px solid var(--gris-linea); cursor: pointer; }
   .item-actividad:last-child { border-bottom: none; }
@@ -795,7 +798,6 @@
     <a class="item-nav" data-vista="mensajes">
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5c-1.4 0-2.7-.3-3.9-.9L3 21l1.9-5.6A8.5 8.5 0 1 1 21 11.5z"/></svg>
       Mensajería
-      <span class="badge">3</span>
     </a>
     <a class="item-nav" data-vista="calendario">
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
@@ -882,7 +884,10 @@
         <h2>Panel de Mando del Comité Técnico</h2>
         <div class="fecha" id="fecha-panel-mando">Cargando fecha...</div>
       </div>
-      <input class="buscador" placeholder="Buscar personas, documentos...">
+      <div class="buscador-global-wrap" id="buscador-global-wrap">
+        <input class="buscador" id="buscador-global" placeholder="Buscar personas, subcomités o documentos..." autocomplete="off">
+        <div class="panel-notif" id="resultados-buscador-global"></div>
+      </div>
     </div>
     <div class="contenido">
       <div class="resumen-grid">
@@ -947,7 +952,7 @@
   <div class="vista" id="vista-documentos">
     <div class="topbar">
       <div><h2>Documentos</h2><div class="fecha">Carpetas propias y carpetas comunes</div></div>
-      <input class="buscador" placeholder="Buscar documentos...">
+      <input class="buscador" id="buscador-documentos" placeholder="Buscar documentos en esta carpeta...">
     </div>
     <div class="contenido">
       <div class="zona-subida" id="zona-subida-documento">
@@ -1771,6 +1776,7 @@
   let carpetasVisibles = [];
   let carpetasConSubida = [];
   let carpetaActual = null;
+  let documentosCarpetaCache = []; // documentos de la carpeta abierta, para poder filtrarlos sin volver a consultar la base de datos
   const CUBO_STORAGE = 'documentos';
 
   function puedeSubirEnCarpeta(clave) {
@@ -1858,16 +1864,30 @@
       console.error(error);
       return;
     }
-    if (!data || data.length === 0) {
-      cuerpo.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--gris-texto);padding:24px;">No hay documentos en esta carpeta todavía.</td></tr>';
+
+    documentosCarpetaCache = data || [];
+    puedeSubirCarpetaActual = puedeSubir;
+    const buscadorDocs = document.getElementById('buscador-documentos');
+    if (buscadorDocs) buscadorDocs.value = '';
+    pintarFilasDocumentos(documentosCarpetaCache);
+  }
+
+  let puedeSubirCarpetaActual = false;
+
+  function pintarFilasDocumentos(lista) {
+    const cuerpo = document.getElementById('tabla-docs-cuerpo');
+    if (!lista || lista.length === 0) {
+      cuerpo.innerHTML = documentosCarpetaCache.length === 0
+        ? '<tr><td colspan="6" style="text-align:center;color:var(--gris-texto);padding:24px;">No hay documentos en esta carpeta todavía.</td></tr>'
+        : '<tr><td colspan="6" style="text-align:center;color:var(--gris-texto);padding:24px;">No se encontró ningún documento con ese criterio.</td></tr>';
       return;
     }
 
-    cuerpo.innerHTML = data.map(doc => {
+    cuerpo.innerHTML = lista.map(doc => {
       const ext = (doc.nombre_archivo || '').split('.').pop().toLowerCase();
       const icono = ext === 'pdf' ? 'pdf' : 'doc';
       const conf = doc.confidencialidad || 'interno';
-      const btnBorrar = puedeSubir
+      const btnBorrar = puedeSubirCarpetaActual
         ? `<button type="button" class="btn-abrir" style="margin-left:6px;color:#D32B1E;border-color:#D32B1E;" onclick="borrarDocumento(${doc.id}, '${(doc.url_archivo || '').replace(/'/g, "\\'")}')">Eliminar</button>`
         : '';
       return `
@@ -1881,6 +1901,20 @@
       </tr>`;
     }).join('');
   }
+
+  function filtrarDocumentosCarpeta(filtro) {
+    const texto = (filtro || '').trim().toLowerCase();
+    if (!texto) { pintarFilasDocumentos(documentosCarpetaCache); return; }
+    const filtrados = documentosCarpetaCache.filter(doc =>
+      (doc.nombre_archivo || '').toLowerCase().includes(texto) ||
+      (doc.subido_por || '').toLowerCase().includes(texto) ||
+      (doc.version || '').toLowerCase().includes(texto)
+    );
+    pintarFilasDocumentos(filtrados);
+  }
+
+  const elBuscadorDocs = document.getElementById('buscador-documentos');
+  if (elBuscadorDocs) elBuscadorDocs.addEventListener('input', (e) => filtrarDocumentosCarpeta(e.target.value));
 
   async function borrarDocumento(id, urlArchivo) {
     if (!confirm('¿Seguro que desea eliminar este documento? Esta acción no se puede deshacer.')) return;
@@ -3061,6 +3095,107 @@
 
   cargarActividadReciente();
   setInterval(cargarActividadReciente, 25000);
+
+  // ============ BUSCADOR GLOBAL DEL PANEL DE MANDO ============
+  // Busca a la vez entre las personas (Directorio), los subcomités y los documentos
+  // (consultando la base de datos en el momento, porque los documentos no están todos
+  // cargados de antemano: viven repartidos por carpetas). Al elegir un resultado, lleva
+  // directamente a la vista correspondiente con ese resultado ya filtrado.
+  let temporizadorBusquedaGlobal = null;
+
+  function cerrarBusquedaGlobal() {
+    const panel = document.getElementById('resultados-buscador-global');
+    if (panel) panel.classList.remove('abierto');
+  }
+
+  function irADirectorioDesdeBusqueda(nombre) {
+    cerrarBusquedaGlobal();
+    activarVista('directorio');
+    const input = document.getElementById('buscador-directorio');
+    input.value = nombre;
+    pintarDirectorio(nombre);
+  }
+
+  function irASubcomiteDesdeBusqueda(nombre) {
+    cerrarBusquedaGlobal();
+    activarVista('subcomites');
+    const input = document.getElementById('buscador-subcomites');
+    input.value = nombre;
+    pintarSubcomitesVista(nombre);
+  }
+
+  async function irADocumentoDesdeBusqueda(subcomite, nombreArchivo) {
+    cerrarBusquedaGlobal();
+    activarVista('documentos');
+    await pintarCarpeta(subcomite);
+    const input = document.getElementById('buscador-documentos');
+    if (input) { input.value = nombreArchivo; filtrarDocumentosCarpeta(nombreArchivo); }
+  }
+
+  async function buscarGlobal(texto) {
+    const panel = document.getElementById('resultados-buscador-global');
+    if (!panel) return;
+    const termino = (texto || '').trim();
+    if (termino.length < 2) { panel.classList.remove('abierto'); return; }
+    const t = termino.toLowerCase();
+
+    const personas = directorioCache.filter(p =>
+      (p.nombre_completo || '').trim() !== '' && (
+        p.nombre_completo.toLowerCase().includes(t) || (p.rol || '').toLowerCase().includes(t)
+      )
+    ).slice(0, 5);
+
+    const subcomitesEncontrados = Object.keys(subcomitesDetalleCache).filter(letra =>
+      (subcomitesDetalleCache[letra].nombre || '').toLowerCase().includes(t) || letra.toLowerCase() === t
+    ).slice(0, 5);
+
+    const { data: docsEncontrados } = await db.from('documentos').select('id,nombre_archivo,subcomite')
+      .ilike('nombre_archivo', '%' + termino + '%').limit(5);
+
+    // Si mientras esperaba la respuesta de la base de datos la persona ya escribió otra
+    // cosa, se descarta este resultado para no pintar algo desactualizado.
+    if (document.getElementById('buscador-global').value.trim() !== termino) return;
+
+    const filas = [];
+    personas.forEach(p => {
+      filas.push('<div class="item-actividad" onclick="irADirectorioDesdeBusqueda(\'' + p.nombre_completo.replace(/'/g, "\\'") + '\')">' +
+        '<div class="icono-doc msg">' + escaparHtml(iniciales(p.nombre_completo)) + '</div>' +
+        '<div><div class="texto-actividad"><span class="quien">' + escaparHtml(p.nombre_completo) + '</span></div>' +
+        '<div class="hora-actividad">' + escaparHtml(etiquetaRol(p.codigo_acceso)) + '</div></div></div>');
+    });
+    subcomitesEncontrados.forEach(letra => {
+      const nombre = subcomitesDetalleCache[letra].nombre || '';
+      filas.push('<div class="item-actividad" onclick="irASubcomiteDesdeBusqueda(\'' + nombre.replace(/'/g, "\\'") + '\')">' +
+        '<div class="icono-doc reunion">' + escaparHtml(letra) + '</div>' +
+        '<div><div class="texto-actividad"><span class="quien">' + escaparHtml(nombre) + '</span></div>' +
+        '<div class="hora-actividad">Subcomité</div></div></div>');
+    });
+    (docsEncontrados || []).forEach(d => {
+      filas.push('<div class="item-actividad" onclick="irADocumentoDesdeBusqueda(\'' + d.subcomite + '\',\'' + (d.nombre_archivo || '').replace(/'/g, "\\'") + '\')">' +
+        '<div class="icono-doc doc">DOC</div>' +
+        '<div><div class="texto-actividad"><span class="quien">' + escaparHtml(d.nombre_archivo) + '</span></div>' +
+        '<div class="hora-actividad">Documento</div></div></div>');
+    });
+
+    panel.innerHTML = filas.length
+      ? filas.join('')
+      : '<div style="padding:16px;text-align:center;color:var(--gris-texto);font-size:12.5px;">Sin resultados para «' + escaparHtml(termino) + '».</div>';
+    panel.classList.add('abierto');
+  }
+
+  const elBuscadorGlobal = document.getElementById('buscador-global');
+  if (elBuscadorGlobal) {
+    elBuscadorGlobal.addEventListener('input', (e) => {
+      clearTimeout(temporizadorBusquedaGlobal);
+      const valor = e.target.value;
+      temporizadorBusquedaGlobal = setTimeout(() => buscarGlobal(valor), 250);
+    });
+    elBuscadorGlobal.addEventListener('focus', (e) => { if (e.target.value.trim().length >= 2) buscarGlobal(e.target.value); });
+    document.addEventListener('click', (e) => {
+      const wrap = document.getElementById('buscador-global-wrap');
+      if (wrap && !wrap.contains(e.target)) cerrarBusquedaGlobal();
+    });
+  }
 </script>
 
 </body>
