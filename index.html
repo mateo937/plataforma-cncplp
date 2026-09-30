@@ -654,8 +654,16 @@
         <input type="email" placeholder="nombre@ministerio.gob.gn" id="input-correo">
       </div>
       <div class="campo-form">
+        <label>Correo institucional</label>
+        <input type="email" placeholder="nombre@mae.gob.gq" id="input-correo-institucional">
+      </div>
+      <div class="campo-form">
         <label>Teléfono</label>
         <input type="tel" placeholder="+240 222 000 000" id="input-telefono">
+      </div>
+      <div class="campo-form">
+        <label>WhatsApp</label>
+        <input type="tel" placeholder="+240 222 000 000" id="input-whatsapp">
       </div>
       <div id="error-registro" style="display:none;color:#D32B1E;font-size:13px;margin:-8px 0 12px;font-weight:600;"></div>
 
@@ -732,9 +740,51 @@
       <div class="nombre" id="nombre-usuario-sidebar">Oficina de la Lusofonía</div>
       <div class="rol" id="rol-usuario-sidebar">Coordinador Nacional</div>
     </div>
-    <span onclick="cerrarSesion()" style="margin-left:auto;cursor:pointer;font-size:11px;color:var(--gris-texto);text-decoration:underline;">Salir</span>
+    <span style="margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:3px;">
+      <span onclick="abrirModalEditarPerfil()" style="cursor:pointer;font-size:11px;color:var(--gris-texto);text-decoration:underline;">Editar</span>
+      <span onclick="cerrarSesion()" style="cursor:pointer;font-size:11px;color:var(--gris-texto);text-decoration:underline;">Salir</span>
+    </span>
   </div>
 </aside>
+
+<!-- ============ MODAL: EDITAR MI PERFIL ============ -->
+<div id="modal-editar-perfil" style="display:none;position:fixed;inset:0;background:rgba(10,46,82,0.55);z-index:100;align-items:center;justify-content:center;">
+  <div style="background:var(--blanco);border-radius:10px;padding:24px;max-width:420px;width:92%;max-height:90vh;overflow-y:auto;">
+    <h3 style="margin:0 0 16px;color:var(--marino);font-family:'Source Serif 4',Georgia,'Times New Roman',serif;">Editar mi perfil</h3>
+    <div class="subida-foto">
+      <div class="circulo-foto" id="circulo-foto-editar">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+      </div>
+      <input type="file" id="input-foto-editar" accept="image/*" style="display:none" onchange="previsualizarFotoEditar(event)">
+      <button type="button" class="btn-foto" onclick="document.getElementById('input-foto-editar').click()">Cambiar fotografía</button>
+    </div>
+    <div class="campo-form">
+      <label>Nombre completo</label>
+      <input type="text" id="editar-nombre">
+    </div>
+    <div class="campo-form">
+      <label>Correo electrónico</label>
+      <input type="email" id="editar-correo">
+    </div>
+    <div class="campo-form">
+      <label>Correo institucional</label>
+      <input type="email" id="editar-correo-institucional">
+    </div>
+    <div class="campo-form">
+      <label>Teléfono</label>
+      <input type="tel" id="editar-telefono">
+    </div>
+    <div class="campo-form">
+      <label>WhatsApp</label>
+      <input type="tel" id="editar-whatsapp">
+    </div>
+    <div id="error-editar-perfil" style="display:none;color:#D32B1E;font-size:13px;margin:-8px 0 12px;font-weight:600;"></div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn-abrir" style="flex:1;padding:10px;" onclick="cerrarModalEditarPerfil()">Cancelar</button>
+      <button class="btn-primario" id="btn-guardar-perfil" style="flex:1;" onclick="guardarEdicionPerfil()">Guardar</button>
+    </div>
+  </div>
+</div>
 
 <main class="main">
 
@@ -1460,8 +1510,7 @@
     document.getElementById('paso-codigo').style.display = 'block';
   }
 
-  function previsualizarFoto(evento) {
-    const archivo = evento.target.files[0];
+  function procesarFotoRedimensionada(archivo, alListo) {
     if (!archivo) return;
     const lector = new FileReader();
     lector.onload = function(e) {
@@ -1477,20 +1526,30 @@
         const x = (tam - img.width * escala) / 2;
         const y = (tam - img.height * escala) / 2;
         ctx.drawImage(img, x, y, img.width * escala, img.height * escala);
-        fotoBase64 = canvas.toDataURL('image/jpeg', 0.8);
-        document.getElementById('circulo-foto-preview').innerHTML =
-          '<img src="' + fotoBase64 + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
+        alListo(canvas.toDataURL('image/jpeg', 0.8));
       };
       img.src = e.target.result;
     };
     lector.readAsDataURL(archivo);
   }
 
+  function previsualizarFoto(evento) {
+    const archivo = evento.target.files[0];
+    if (!archivo) return;
+    procesarFotoRedimensionada(archivo, function(dataUrl) {
+      fotoBase64 = dataUrl;
+      document.getElementById('circulo-foto-preview').innerHTML =
+        '<img src="' + fotoBase64 + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
+    });
+  }
+
   async function entrarPlataforma() {
     if (!filaActual) return;
     const nombre = document.getElementById('input-nombre').value.trim();
     const correo = document.getElementById('input-correo').value.trim();
+    const correoInstitucional = document.getElementById('input-correo-institucional').value.trim();
     const telefono = document.getElementById('input-telefono').value.trim();
+    const whatsapp = document.getElementById('input-whatsapp').value.trim();
     const errorEl = document.getElementById('error-registro');
     errorEl.style.display = 'none';
 
@@ -1505,7 +1564,14 @@
     btn.disabled = true;
 
     const { data, error } = await db.from(TABLA_PERSONAS)
-      .update({ nombre_completo: nombre, correo: correo, telefono: telefono, foto_url: fotoBase64 || null })
+      .update({
+        nombre_completo: nombre,
+        correo: correo,
+        correo_institucional: correoInstitucional || null,
+        telefono: telefono,
+        whatsapp: whatsapp || null,
+        foto_url: fotoBase64 || null
+      })
       .eq('codigo_acceso', filaActual.codigo_acceso)
       .select()
       .maybeSingle();
@@ -1520,7 +1586,94 @@
       return;
     }
 
-    guardarSesionYEntrar(data || { ...filaActual, nombre_completo: nombre, correo, telefono, foto_url: fotoBase64 });
+    guardarSesionYEntrar(data || { ...filaActual, nombre_completo: nombre, correo, correo_institucional: correoInstitucional, telefono, whatsapp, foto_url: fotoBase64 });
+  }
+
+  // ============ EDITAR MI PERFIL (cada persona puede actualizar sus propios datos con su código) ============
+  let fotoBase64Editar = '';
+
+  function abrirModalEditarPerfil() {
+    if (!usuarioActual) return;
+    fotoBase64Editar = '';
+    document.getElementById('editar-nombre').value = usuarioActual.nombre_completo || '';
+    document.getElementById('editar-correo').value = usuarioActual.correo || '';
+    document.getElementById('editar-correo-institucional').value = usuarioActual.correo_institucional || '';
+    document.getElementById('editar-telefono').value = usuarioActual.telefono || '';
+    document.getElementById('editar-whatsapp').value = usuarioActual.whatsapp || '';
+    document.getElementById('error-editar-perfil').style.display = 'none';
+
+    const circulo = document.getElementById('circulo-foto-editar');
+    circulo.innerHTML = usuarioActual.foto_url
+      ? '<img src="' + usuarioActual.foto_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">'
+      : '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>';
+
+    document.getElementById('modal-editar-perfil').style.display = 'flex';
+  }
+
+  function cerrarModalEditarPerfil() {
+    document.getElementById('modal-editar-perfil').style.display = 'none';
+  }
+
+  function previsualizarFotoEditar(evento) {
+    const archivo = evento.target.files[0];
+    if (!archivo) return;
+    procesarFotoRedimensionada(archivo, function(dataUrl) {
+      fotoBase64Editar = dataUrl;
+      document.getElementById('circulo-foto-editar').innerHTML =
+        '<img src="' + fotoBase64Editar + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
+    });
+  }
+
+  async function guardarEdicionPerfil() {
+    if (!usuarioActual) return;
+    const nombre = document.getElementById('editar-nombre').value.trim();
+    const correo = document.getElementById('editar-correo').value.trim();
+    const correoInstitucional = document.getElementById('editar-correo-institucional').value.trim();
+    const telefono = document.getElementById('editar-telefono').value.trim();
+    const whatsapp = document.getElementById('editar-whatsapp').value.trim();
+    const errorEl = document.getElementById('error-editar-perfil');
+    errorEl.style.display = 'none';
+
+    if (!nombre || !correo || !telefono) {
+      errorEl.textContent = 'Por favor, complete al menos nombre, correo y teléfono.';
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    const btn = document.getElementById('btn-guardar-perfil');
+    btn.textContent = 'Guardando...';
+    btn.disabled = true;
+
+    const datosActualizados = {
+      nombre_completo: nombre,
+      correo: correo,
+      correo_institucional: correoInstitucional || null,
+      telefono: telefono,
+      whatsapp: whatsapp || null
+    };
+    if (fotoBase64Editar) datosActualizados.foto_url = fotoBase64Editar;
+
+    const { data, error } = await db.from(TABLA_PERSONAS)
+      .update(datosActualizados)
+      .eq('codigo_acceso', usuarioActual.codigo_acceso)
+      .select()
+      .maybeSingle();
+
+    btn.textContent = 'Guardar';
+    btn.disabled = false;
+
+    if (error) {
+      errorEl.textContent = 'No se pudo guardar los cambios. Compruebe su conexión e inténtelo de nuevo.';
+      errorEl.style.display = 'block';
+      console.error(error);
+      return;
+    }
+
+    const datosFinales = data || { ...usuarioActual, ...datosActualizados };
+    usuarioActual = datosFinales;
+    try { localStorage.setItem(CLAVE_SESION, JSON.stringify(datosFinales)); } catch (e) {}
+    pintarUsuarioEnSidebar(datosFinales);
+    cerrarModalEditarPerfil();
   }
 
   function cerrarSesion() {
@@ -2159,6 +2312,8 @@
       const codigoFila = p.codigo_acceso || '';
       if (codigoFila.startsWith('CN-') || codigoFila.startsWith('PFN-') || codigoFila.startsWith('CS-')) {
         subInfo = 'Oficina de la Lusofonía — Ministerio de Asuntos Exteriores, Cooperación Internacional y Diáspora';
+      } else if (codigoFila.startsWith('ML-')) {
+        subInfo = 'Misión Permanente de Guinea Ecuatorial ante la CPLP (Lisboa)';
       } else if (codigoFila.startsWith('PF-')) {
         const coincidenciaDG = (p.rol || '').match(/\(([^)]+)\)/);
         const direccionGeneral = coincidenciaDG ? coincidenciaDG[1] : '';
@@ -2169,19 +2324,28 @@
         ? '<div style="font-size:11px;color:var(--gris-texto);margin-top:2px;white-space:normal;max-width:280px;line-height:1.4;">' + escaparHtml(subInfo) + '</div>'
         : '';
 
+      const correoInstitucionalHtml = (registrado && p.correo_institucional)
+        ? '<div style="font-size:11px;color:var(--gris-texto);margin-top:2px;">Institucional: ' + escaparHtml(p.correo_institucional) + '</div>'
+        : '';
+
+      const numeroWhatsapp = (p.whatsapp || '').replace(/[^0-9]/g, '');
+      const whatsappHtml = (registrado && numeroWhatsapp)
+        ? '<div style="margin-top:2px;"><a href="https://wa.me/' + numeroWhatsapp + '" target="_blank" rel="noopener" style="font-size:11px;color:#25D366;font-weight:600;text-decoration:none;">📱 WhatsApp</a></div>'
+        : '';
+
       return '<tr' + estiloFila + '>' +
         '<td><div class="persona-nombre">' + avatarHtml + escaparHtml(nombreMostrado) + '</div></td>' +
         '<td><span class="' + claseRol + '">' + escaparHtml(etiquetaRol(p.codigo_acceso)) + '</span></td>' +
         '<td>' + escaparHtml(nombreSub) + subInfoHtml + '</td>' +
-        '<td>' + (registrado ? escaparHtml(p.correo || '—') : '—') + '</td>' +
-        '<td>' + (registrado ? escaparHtml(p.telefono || '—') : '—') + '</td>' +
+        '<td>' + (registrado ? escaparHtml(p.correo || '—') : '—') + correoInstitucionalHtml + '</td>' +
+        '<td>' + (registrado ? escaparHtml(p.telefono || '—') : '—') + whatsappHtml + '</td>' +
         '</tr>';
     }).join('');
   }
 
   async function cargarDirectorio() {
     const [respPersonas, respSubcomites] = await Promise.all([
-      db.from('Puntos Focales').select('codigo_acceso,nombre_completo,correo,telefono,subcomite,rol,foto_url').order('codigo_acceso'),
+      db.from('Puntos Focales').select('codigo_acceso,nombre_completo,correo,correo_institucional,telefono,whatsapp,subcomite,rol,foto_url').order('codigo_acceso'),
       db.from('Subcomites').select('letra,nombre,ministerio,direccion_general')
     ]);
 
