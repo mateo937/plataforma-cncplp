@@ -1338,61 +1338,28 @@
       <div class="muro-layout">
         <div>
           <div class="publicar-caja">
-            <textarea placeholder="Compartir una novedad con la red..."></textarea>
+            <textarea id="texto-nueva-publicacion" placeholder="Compartir una novedad con la red..."></textarea>
+            <div id="archivo-muro-elegido" style="display:none;font-size:12px;color:var(--gris-texto);margin-top:6px;"></div>
             <div class="fila-acciones">
-              <span style="font-size:12px;color:var(--gris-texto);">📎 Adjuntar documento</span>
-              <button class="btn-primario" style="padding:7px 16px;">Publicar</button>
+              <input type="file" id="input-archivo-muro" style="display:none" accept=".pdf,.doc,.docx">
+              <span style="font-size:12px;color:var(--gris-texto);cursor:pointer;" onclick="document.getElementById('input-archivo-muro').click()">📎 Adjuntar documento</span>
+              <button class="btn-primario" id="btn-publicar-muro" style="padding:7px 16px;" onclick="publicarEnMuro()">Publicar</button>
             </div>
           </div>
 
-          <div class="post">
-            <div class="post-cabeza">
-              <div class="avatar" style="width:34px;height:34px;font-size:11.5px;">AO</div>
-              <div><div class="nombre-post">A. Ondó Nchama · Subcomité de Salud</div><div class="meta-post">hace 40 minutos</div></div>
-            </div>
-            <div class="post-texto">Reunión de seguimiento con el Secretariado de la CPLP confirmada. Agradezco a todos los puntos focales de Salud su disponibilidad; enviaré la agenda definitiva esta semana.</div>
-            <div class="post-acciones">
-              <div class="post-accion">👍 9</div>
-              <div class="post-accion">💬 2 comentarios</div>
-            </div>
-          </div>
-
-          <div class="post">
-            <div class="post-cabeza">
-              <div class="avatar" style="width:34px;height:34px;font-size:11.5px;">PM</div>
-              <div><div class="nombre-post">P. Mba Nchama · Subcomité de Educación</div><div class="meta-post">hace 3 horas</div></div>
-            </div>
-            <div class="post-texto">Se añadieron 3 nuevos documentos a la carpeta de Educación, incluido el plan de intercambio estudiantil 2026-2027. Quedan invitados a comentar directamente en los archivos.</div>
-            <div class="adjunto-msg" style="margin-bottom:11px;">📄 Plan de Intercambio Estudiantil 2026-27.pdf</div>
-            <div class="post-acciones">
-              <div class="post-accion">👍 6</div>
-              <div class="post-accion">💬 1 comentario</div>
-            </div>
-          </div>
-          <div class="post">
-            <div class="post-cabeza">
-              <div class="avatar" style="width:34px;height:34px;font-size:11.5px;">DM</div>
-              <div><div class="nombre-post">D. Mangue Obiang · Subcomité de Agricultura</div><div class="meta-post">hace 9 días</div></div>
-            </div>
-            <div class="post-texto">El Plan de Seguridad Alimentaria 2026 quedó pendiente de una última revisión técnica antes de someterlo a la Comisión Nacional. Solicito a los puntos focales de subcomités afines (Pesca, Medio Ambiente) su valoración antes del 5 de octubre.</div>
-            <div class="post-acciones">
-              <div class="post-accion">👍 4</div>
-              <div class="post-accion">💬 3 comentarios</div>
-            </div>
+          <div id="lista-publicaciones-muro">
+            <div style="text-align:center;color:var(--gris-texto);padding:24px;">Cargando publicaciones...</div>
           </div>
         </div>
 
         <div>
           <div class="widget-lateral">
-            <h3>Subcomités destacados</h3>
-            <div class="lista-mini-item"><div class="avatar" style="width:24px;height:24px;font-size:9.5px;">V</div> Salud — 3 novedades</div>
-            <div class="lista-mini-item"><div class="avatar" style="width:24px;height:24px;font-size:9.5px;">N</div> Educación — 2 novedades</div>
-            <div class="lista-mini-item"><div class="avatar" style="width:24px;height:24px;font-size:9.5px;">J</div> Cultura — 1 novedad</div>
+            <h3>Subcomités con más novedades</h3>
+            <div id="widget-subcomites-destacados"><div class="lista-mini-item" style="color:var(--gris-texto);">Cargando...</div></div>
           </div>
           <div class="widget-lateral">
             <h3>Próximas reuniones</h3>
-            <div class="lista-mini-item">📅 Comité Técnico — 1 oct</div>
-            <div class="lista-mini-item">📅 Sectorial Educación — 14 oct</div>
+            <div id="widget-proximas-reuniones-muro"><div class="lista-mini-item" style="color:var(--gris-texto);">Cargando...</div></div>
           </div>
         </div>
       </div>
@@ -2374,6 +2341,338 @@
   document.getElementById('buscador-directorio').addEventListener('input', (e) => pintarDirectorio(e.target.value));
 
   cargarDirectorio();
+
+  // ============ MURAL DE LA RED CONECTADO A LA BASE DE DATOS REAL ============
+  // Red social interna: cualquier persona registrada puede publicar (con texto y, si quiere,
+  // un documento adjunto) y todos pueden verlo, dar "me gusta" y comentar. No hay carpetas
+  // privadas aquí, a diferencia de Documentos y Mensajería.
+  let publicacionesMuroCache = [];
+  let comentariosMuroCache = {}; // { idPublicacion: [comentarios] }
+  let likesMuroCache = {}; // { idPublicacion: [codigo_acceso de quienes dieron like] }
+  let nombresSubcomitesMuro = {};
+  let archivoElegidoMuro = null;
+
+  function tiempoRelativo(iso) {
+    if (!iso) return '';
+    const ahora = new Date();
+    const fecha = new Date(iso);
+    const segundos = Math.floor((ahora - fecha) / 1000);
+    if (segundos < 60) return 'hace un momento';
+    const minutos = Math.floor(segundos / 60);
+    if (minutos < 60) return 'hace ' + minutos + (minutos === 1 ? ' minuto' : ' minutos');
+    const horas = Math.floor(minutos / 60);
+    if (horas < 24) return 'hace ' + horas + (horas === 1 ? ' hora' : ' horas');
+    const dias = Math.floor(horas / 24);
+    if (dias < 30) return 'hace ' + dias + (dias === 1 ? ' día' : ' días');
+    return fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  function areaTextoMuro(subcomite) {
+    if (!subcomite || subcomite === 'GENERAL') return 'Coordinación General';
+    return subcomite + '. ' + (nombresSubcomitesMuro[subcomite] || '');
+  }
+
+  document.getElementById('input-archivo-muro').addEventListener('change', (e) => {
+    archivoElegidoMuro = e.target.files[0] || null;
+    const aviso = document.getElementById('archivo-muro-elegido');
+    if (archivoElegidoMuro) {
+      aviso.style.display = 'block';
+      aviso.innerHTML = '📎 ' + escaparHtml(archivoElegidoMuro.name) + ' — <a href="#" onclick="quitarArchivoMuro();return false;">quitar</a>';
+    } else {
+      aviso.style.display = 'none';
+    }
+  });
+
+  function quitarArchivoMuro() {
+    archivoElegidoMuro = null;
+    document.getElementById('input-archivo-muro').value = '';
+    document.getElementById('archivo-muro-elegido').style.display = 'none';
+  }
+
+  async function publicarEnMuro() {
+    if (!usuarioActual) return;
+    const textarea = document.getElementById('texto-nueva-publicacion');
+    const texto = textarea.value.trim();
+    if (!texto && !archivoElegidoMuro) return;
+
+    const btn = document.getElementById('btn-publicar-muro');
+    btn.disabled = true;
+    btn.textContent = 'Publicando...';
+
+    let archivoNombre = null;
+    let archivoUrl = null;
+    if (archivoElegidoMuro) {
+      const rutaArchivo = 'muro/' + Date.now() + '_' + archivoElegidoMuro.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const { error: errorSubida } = await db.storage.from(CUBO_STORAGE).upload(rutaArchivo, archivoElegidoMuro);
+      if (errorSubida) {
+        btn.disabled = false;
+        btn.textContent = 'Publicar';
+        console.error(errorSubida);
+        alert('No se pudo adjuntar el archivo. Inténtelo de nuevo.');
+        return;
+      }
+      const { data: urlPublica } = db.storage.from(CUBO_STORAGE).getPublicUrl(rutaArchivo);
+      archivoNombre = archivoElegidoMuro.name;
+      archivoUrl = urlPublica.publicUrl;
+    }
+
+    const rolQuienPublica = typeof etiquetaRol === 'function' ? etiquetaRol(usuarioActual.codigo_acceso || '') : '';
+
+    const { error } = await db.from('muro').insert({
+      autor_codigo: usuarioActual.codigo_acceso,
+      autor_nombre: usuarioActual.nombre_completo || usuarioActual.rol || 'Usuario CN-CPLP',
+      autor_rol: rolQuienPublica,
+      autor_subcomite: usuarioActual.subcomite || 'GENERAL',
+      autor_foto_url: usuarioActual.foto_url || null,
+      texto: texto || null,
+      archivo_nombre: archivoNombre,
+      archivo_url: archivoUrl
+    });
+
+    btn.disabled = false;
+    btn.textContent = 'Publicar';
+
+    if (error) {
+      console.error(error);
+      alert('No se pudo publicar. Inténtelo de nuevo.');
+      return;
+    }
+
+    textarea.value = '';
+    quitarArchivoMuro();
+    cargarMuro();
+  }
+
+  async function borrarPublicacionMuro(id, urlArchivo) {
+    if (!confirm('¿Eliminar esta publicación? Esta acción no se puede deshacer.')) return;
+
+    if (urlArchivo) {
+      const marcador = '/object/public/' + CUBO_STORAGE + '/';
+      const idx = urlArchivo.indexOf(marcador);
+      if (idx !== -1) {
+        const ruta = decodeURIComponent(urlArchivo.substring(idx + marcador.length));
+        const { error: errorAlmacen } = await db.storage.from(CUBO_STORAGE).remove([ruta]);
+        if (errorAlmacen) console.error(errorAlmacen);
+      }
+    }
+
+    await db.from('muro_comentarios').delete().eq('post_id', id);
+    await db.from('muro_likes').delete().eq('post_id', id);
+    const { error } = await db.from('muro').delete().eq('id', id);
+    if (error) {
+      alert('No se pudo eliminar la publicación. Inténtelo de nuevo.');
+      console.error(error);
+      return;
+    }
+    cargarMuro();
+  }
+
+  function pintarBotonLike(id) {
+    const codigoPropio = usuarioActual && usuarioActual.codigo_acceso;
+    const lista = likesMuroCache[id] || [];
+    const yaLeDioLike = codigoPropio && lista.indexOf(codigoPropio) !== -1;
+    const boton = document.getElementById('btn-like-' + id);
+    const span = document.getElementById('likes-' + id);
+    if (span) span.textContent = lista.length;
+    if (boton) {
+      boton.style.color = yaLeDioLike ? 'var(--marino)' : '';
+      boton.style.fontWeight = yaLeDioLike ? '700' : '400';
+    }
+  }
+
+  // "Me gusta" al estilo Facebook: cada persona puede darlo una sola vez por publicación y
+  // quitarlo volviendo a pulsar; no es un contador que solo sube.
+  async function darLikePost(id) {
+    if (!usuarioActual) return;
+    const codigoPropio = usuarioActual.codigo_acceso;
+    if (!likesMuroCache[id]) likesMuroCache[id] = [];
+    const lista = likesMuroCache[id];
+    const indice = lista.indexOf(codigoPropio);
+    const yaLeDioLike = indice !== -1;
+
+    // Respuesta visual inmediata, antes de esperar a la base de datos
+    if (yaLeDioLike) lista.splice(indice, 1);
+    else lista.push(codigoPropio);
+    pintarBotonLike(id);
+
+    if (yaLeDioLike) {
+      const { error } = await db.from('muro_likes').delete().eq('post_id', id).eq('autor_codigo', codigoPropio);
+      if (error) { console.error(error); lista.push(codigoPropio); pintarBotonLike(id); }
+    } else {
+      const { error } = await db.from('muro_likes').insert({ post_id: id, autor_codigo: codigoPropio });
+      if (error) { console.error(error); lista.splice(lista.indexOf(codigoPropio), 1); pintarBotonLike(id); }
+    }
+  }
+
+  function toggleComentariosPost(id) {
+    const contenedor = document.getElementById('comentarios-' + id);
+    if (!contenedor) return;
+    contenedor.style.display = contenedor.style.display === 'none' ? 'block' : 'none';
+  }
+
+  function pintarComentariosPost(id) {
+    const lista = document.getElementById('lista-comentarios-' + id);
+    if (!lista) return;
+    const comentarios = comentariosMuroCache[id] || [];
+    if (comentarios.length === 0) {
+      lista.innerHTML = '<div style="font-size:12px;color:var(--gris-texto);padding:4px 0;">Sea el primero en comentar.</div>';
+      return;
+    }
+    lista.innerHTML = comentarios.map(c =>
+      '<div style="font-size:12.5px;padding:6px 0;border-top:1px solid var(--gris-linea);">' +
+      '<strong>' + escaparHtml(c.autor_nombre || 'Usuario') + '</strong>' +
+      (c.autor_rol ? ' <span style="color:var(--gris-texto);font-size:11px;">· ' + escaparHtml(c.autor_rol) + '</span>' : '') +
+      '<div>' + escaparHtml(c.contenido || '') + '</div>' +
+      '</div>'
+    ).join('');
+  }
+
+  async function enviarComentario(id) {
+    if (!usuarioActual) return;
+    const input = document.getElementById('input-comentario-' + id);
+    const contenido = input.value.trim();
+    if (!contenido) return;
+
+    const rolQuienComenta = typeof etiquetaRol === 'function' ? etiquetaRol(usuarioActual.codigo_acceso || '') : '';
+
+    const { error } = await db.from('muro_comentarios').insert({
+      post_id: id,
+      autor_codigo: usuarioActual.codigo_acceso,
+      autor_nombre: usuarioActual.nombre_completo || usuarioActual.rol || 'Usuario CN-CPLP',
+      autor_rol: rolQuienComenta,
+      contenido: contenido
+    });
+
+    if (error) {
+      console.error(error);
+      alert('No se pudo enviar el comentario. Inténtelo de nuevo.');
+      return;
+    }
+
+    input.value = '';
+    cargarMuro(true);
+  }
+
+  function pintarMuro() {
+    const contenedor = document.getElementById('lista-publicaciones-muro');
+    if (publicacionesMuroCache.length === 0) {
+      contenedor.innerHTML = '<div style="text-align:center;color:var(--gris-texto);padding:24px;">No hay publicaciones todavía. Sea el primero en compartir una novedad.</div>';
+      return;
+    }
+    const codigoPropio = usuarioActual && usuarioActual.codigo_acceso;
+    const esModerador = codigoPropio && codigoPropio.startsWith('CN-');
+
+    contenedor.innerHTML = publicacionesMuroCache.map(p => {
+      const esPropio = p.autor_codigo && codigoPropio && p.autor_codigo === codigoPropio;
+      const estiloAvatar = p.autor_foto_url
+        ? 'background-image:url(\'' + p.autor_foto_url.replace(/'/g, "\\'") + '\');background-size:cover;background-position:center;'
+        : '';
+      const avatarHtml = '<div class="avatar" style="width:34px;height:34px;font-size:11.5px;' + estiloAvatar + '">' + (p.autor_foto_url ? '' : iniciales(p.autor_nombre)) + '</div>';
+      const textoHtml = p.texto ? '<div class="post-texto">' + escaparHtml(p.texto) + '</div>' : '';
+      const adjuntoHtml = p.archivo_url
+        ? '<a class="adjunto-msg" href="' + p.archivo_url + '" target="_blank" rel="noopener" style="text-decoration:none;display:flex;margin-bottom:11px;">📄 ' + escaparHtml(p.archivo_nombre || 'Documento adjunto') + '</a>'
+        : '';
+      const numComentarios = (comentariosMuroCache[p.id] || []).length;
+      const btnBorrar = (esPropio || esModerador)
+        ? '<span onclick="borrarPublicacionMuro(' + p.id + (p.archivo_url ? ", '" + p.archivo_url.replace(/'/g, "\\'") + "'" : ', null') + ')" style="margin-left:auto;cursor:pointer;color:#D32B1E;font-size:12px;" title="Eliminar publicación">🗑</span>'
+        : '';
+
+      return '<div class="post">' +
+        '<div class="post-cabeza">' + avatarHtml +
+        '<div><div class="nombre-post">' + escaparHtml(p.autor_nombre || 'Usuario') + ' · ' + escaparHtml(areaTextoMuro(p.autor_subcomite)) + '</div>' +
+        '<div class="meta-post">' + tiempoRelativo(p.created_at) + '</div></div>' + btnBorrar +
+        '</div>' +
+        textoHtml + adjuntoHtml +
+        '<div class="post-acciones">' +
+        '<div class="post-accion" id="btn-like-' + p.id + '" style="cursor:pointer;" onclick="darLikePost(' + p.id + ')">👍 <span id="likes-' + p.id + '">' + ((likesMuroCache[p.id] || []).length) + '</span></div>' +
+        '<div class="post-accion" style="cursor:pointer;" onclick="toggleComentariosPost(' + p.id + ')">💬 ' + numComentarios + (numComentarios === 1 ? ' comentario' : ' comentarios') + '</div>' +
+        '</div>' +
+        '<div class="comentarios-post" id="comentarios-' + p.id + '" style="display:none;border-top:1px solid var(--gris-linea);margin-top:10px;padding-top:8px;">' +
+        '<div id="lista-comentarios-' + p.id + '"></div>' +
+        '<div style="display:flex;gap:8px;margin-top:8px;">' +
+        '<input type="text" id="input-comentario-' + p.id + '" placeholder="Escribir un comentario..." style="flex:1;padding:7px 10px;border:1px solid var(--gris-linea);border-radius:6px;font-size:12.5px;font-family:inherit;">' +
+        '<button class="btn-abrir" style="padding:7px 12px;" onclick="enviarComentario(' + p.id + ')">Enviar</button>' +
+        '</div></div>' +
+        '</div>';
+    }).join('');
+
+    publicacionesMuroCache.forEach(p => { pintarComentariosPost(p.id); pintarBotonLike(p.id); });
+  }
+
+  function pintarWidgetsMuro() {
+    const conteoPorSubcomite = {};
+    publicacionesMuroCache.forEach(p => {
+      const clave = p.autor_subcomite || 'GENERAL';
+      if (clave === 'GENERAL') return;
+      conteoPorSubcomite[clave] = (conteoPorSubcomite[clave] || 0) + 1;
+    });
+    const destacados = Object.keys(conteoPorSubcomite)
+      .map(letra => ({ letra, cuenta: conteoPorSubcomite[letra] }))
+      .sort((a, b) => b.cuenta - a.cuenta)
+      .slice(0, 3);
+
+    const widgetDestacados = document.getElementById('widget-subcomites-destacados');
+    widgetDestacados.innerHTML = destacados.length === 0
+      ? '<div class="lista-mini-item" style="color:var(--gris-texto);">Todavía no hay novedades.</div>'
+      : destacados.map(d =>
+          '<div class="lista-mini-item"><div class="avatar" style="width:24px;height:24px;font-size:9.5px;">' + escaparHtml(d.letra.charAt(0)) + '</div> ' +
+          escaparHtml(nombresSubcomitesMuro[d.letra] || d.letra) + ' — ' + d.cuenta + (d.cuenta === 1 ? ' novedad' : ' novedades') + '</div>'
+        ).join('');
+  }
+
+  async function cargarProximasReunionesMuro() {
+    const hoyISO = new Date().toISOString().slice(0, 10);
+    const { data, error } = await db.from('reuniones').select('titulo,fecha,subcomite').gte('fecha', hoyISO).order('fecha', { ascending: true }).limit(2);
+    const widget = document.getElementById('widget-proximas-reuniones-muro');
+    if (error) { widget.innerHTML = '<div class="lista-mini-item" style="color:var(--gris-texto);">No se pudieron cargar.</div>'; console.error(error); return; }
+    if (!data || data.length === 0) { widget.innerHTML = '<div class="lista-mini-item" style="color:var(--gris-texto);">No hay reuniones próximas.</div>'; return; }
+    widget.innerHTML = data.map(r => {
+      const [y, m, d] = r.fecha.split('-').map(Number);
+      const fechaCorta = d + ' ' + ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][m - 1];
+      return '<div class="lista-mini-item">📅 ' + escaparHtml(r.titulo || 'Reunión') + ' — ' + fechaCorta + '</div>';
+    }).join('');
+  }
+
+  async function cargarMuro(silencioso) {
+    if (!silencioso) document.getElementById('lista-publicaciones-muro').innerHTML = '<div style="text-align:center;color:var(--gris-texto);padding:24px;">Cargando publicaciones...</div>';
+
+    const [respPublicaciones, respComentarios, respLikes, respSubcomites] = await Promise.all([
+      db.from('muro').select('*').order('created_at', { ascending: false }),
+      db.from('muro_comentarios').select('*').order('created_at', { ascending: true }),
+      db.from('muro_likes').select('post_id,autor_codigo'),
+      Object.keys(nombresSubcomitesMuro).length === 0 ? db.from('Subcomites').select('letra,nombre') : Promise.resolve({ data: null })
+    ]);
+
+    if (respPublicaciones.error) {
+      document.getElementById('lista-publicaciones-muro').innerHTML = '<div style="text-align:center;color:#D32B1E;padding:24px;">No se pudieron cargar las publicaciones.</div>';
+      console.error(respPublicaciones.error);
+      return;
+    }
+
+    if (respSubcomites.data) {
+      respSubcomites.data.forEach(s => { if (!nombresSubcomitesMuro[s.letra]) nombresSubcomitesMuro[s.letra] = s.nombre; });
+    }
+
+    publicacionesMuroCache = respPublicaciones.data || [];
+
+    comentariosMuroCache = {};
+    (respComentarios.data || []).forEach(c => {
+      if (!comentariosMuroCache[c.post_id]) comentariosMuroCache[c.post_id] = [];
+      comentariosMuroCache[c.post_id].push(c);
+    });
+
+    likesMuroCache = {};
+    (respLikes.data || []).forEach(l => {
+      if (!likesMuroCache[l.post_id]) likesMuroCache[l.post_id] = [];
+      likesMuroCache[l.post_id].push(l.autor_codigo);
+    });
+
+    pintarMuro();
+    pintarWidgetsMuro();
+  }
+
+  cargarMuro();
+  cargarProximasReunionesMuro();
 
   // ============ CALENDARIO CONECTADO A LA BASE DE DATOS REAL ============
   const diasGrid = document.getElementById('dias-grid');
