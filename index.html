@@ -2074,7 +2074,14 @@
     (respSubcomites.data || []).forEach(s => {
       if (!nombresSubcomitesDirectorio[s.letra]) nombresSubcomitesDirectorio[s.letra] = s.nombre;
       if (!subcomitesDetalleCache[s.letra]) {
-        subcomitesDetalleCache[s.letra] = { nombre: s.nombre, direccion_general: s.direccion_general || '', ministerio: s.ministerio || '' };
+        subcomitesDetalleCache[s.letra] = { nombre: s.nombre, direcciones: [] };
+      }
+      // Un mismo subcomité puede reunir a varias Direcciones Generales (de distintos
+      // ministerios): se guardan todas, no solo la primera.
+      const yaEsta = subcomitesDetalleCache[s.letra].direcciones.some(d =>
+        d.direccion_general === (s.direccion_general || '') && d.ministerio === (s.ministerio || ''));
+      if (!yaEsta && (s.direccion_general || s.ministerio)) {
+        subcomitesDetalleCache[s.letra].direcciones.push({ direccion_general: s.direccion_general || '', ministerio: s.ministerio || '' });
       }
       if (s.direccion_general && !ministerioPorDireccionGeneral[s.direccion_general]) {
         ministerioPorDireccionGeneral[s.direccion_general] = s.ministerio || '';
@@ -2109,8 +2116,19 @@
     const registrado = p.nombre_completo && p.nombre_completo.trim() !== '';
     const nombreMostrado = registrado ? p.nombre_completo : 'Pendiente de registro';
     const claseNombre = registrado ? 'nombre-rol' : 'nombre-rol pendiente';
-    return '<div class="rol-fila"><span class="etiqueta-rol">' + escaparHtml(etiquetaRol(p.codigo_acceso)) +
-      '</span><span class="' + claseNombre + '">' + escaparHtml(nombreMostrado) + '</span></div>';
+    const codigo = p.codigo_acceso || '';
+    // Cuando el subcomité tiene varias Direcciones Generales, cada Punto Focal (y su
+    // Adjunto) pertenece a una en concreto: se extrae de su "rol" guardado, p. ej.
+    // "Punto Focal Sectorial (Dirección General de Economía y Cuentas Nacionales)".
+    let dgHtml = '';
+    if (codigo.startsWith('PF-')) {
+      const coincidenciaDG = (p.rol || '').match(/\(([^)]+)\)/);
+      if (coincidenciaDG) {
+        dgHtml = '<div style="font-size:10.5px;color:var(--gris-texto);margin-top:1px;">' + escaparHtml(coincidenciaDG[1]) + '</div>';
+      }
+    }
+    return '<div class="rol-fila"><span class="etiqueta-rol">' + escaparHtml(etiquetaRol(codigo)) +
+      '</span><span><span class="' + claseNombre + '">' + escaparHtml(nombreMostrado) + '</span>' + dgHtml + '</span></div>';
   }
 
   function pintarSubcomitesVista(filtro) {
@@ -2146,17 +2164,21 @@
       const detalle = subcomitesDetalleCache[letra];
       const miembros = directorioCache.filter(p => p.subcomite === letra)
         .slice().sort((a, b) => ordenRolesSubcomite(a) - ordenRolesSubcomite(b));
-      const depto = [detalle.direccion_general, detalle.ministerio].filter(Boolean).join(' · ');
+      const direcciones = detalle.direcciones || [];
+      const deptoTexto = direcciones.map(d => [d.direccion_general, d.ministerio].filter(Boolean).join(' · ')).join(' | ');
+      const deptoHtml = direcciones.length
+        ? direcciones.map(d => '<div style="margin-bottom:2px;">' + escaparHtml([d.direccion_general, d.ministerio].filter(Boolean).join(' · ')) + '</div>').join('')
+        : '';
 
-      const textoTarjeta = (letra + ' ' + (detalle.nombre || '') + ' ' + depto + ' ' +
-        miembros.map(p => (p.nombre_completo || '') + ' ' + (p.codigo_acceso || '')).join(' ')).toLowerCase();
+      const textoTarjeta = (letra + ' ' + (detalle.nombre || '') + ' ' + deptoTexto + ' ' +
+        miembros.map(p => (p.nombre_completo || '') + ' ' + (p.codigo_acceso || '') + ' ' + (p.rol || '')).join(' ')).toLowerCase();
       if (texto && !textoTarjeta.includes(texto)) return;
 
       tarjetas.push(
         '<div class="tarjeta-subcomite">' +
           '<div class="letra">' + escaparHtml(letra) + '</div>' +
           '<div class="nombre-sub">' + escaparHtml(detalle.nombre || '') + '</div>' +
-          '<div class="depto">' + escaparHtml(depto) + '</div>' +
+          '<div class="depto">' + deptoHtml + '</div>' +
           '<div class="roles">' +
             (miembros.length ? miembros.map(filaRolSubcomite).join('') : '<div class="rol-fila"><span class="nombre-rol pendiente">Sin puestos registrados todavía</span></div>') +
           '</div>' +
