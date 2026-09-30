@@ -1129,18 +1129,11 @@
 
       <div class="dos-columnas-docs">
         <div class="lista-carpetas-lateral" id="lista-carpetas-lateral">
-          <div class="carpeta-lateral activa" data-carpeta="salud">📁 Salud</div>
-          <div class="carpeta-lateral" data-carpeta="actas">📁 Actas de Reuniones CN-CPLP</div>
-          <div class="carpeta-lateral" data-carpeta="planes">📁 Planes Estratégicos CPLP</div>
-          <div class="carpeta-lateral" data-carpeta="circulares">📁 Circulares del Secretariado</div>
-          <div class="carpeta-lateral" data-carpeta="plantillas">📁 Formatos y plantillas oficiales</div>
-          <div class="carpeta-lateral" data-carpeta="educacion">📁 Educación</div>
-          <div class="carpeta-lateral" data-carpeta="cultura">📁 Cultura</div>
-          <div class="carpeta-lateral" data-carpeta="agricultura">📁 Agricultura</div>
+          <div style="text-align:center;color:var(--gris-texto);padding:14px 6px;font-size:13px;">Cargando carpetas...</div>
         </div>
 
         <div>
-          <div class="ruta-carpeta" id="ruta-carpeta-actual"><span>Documentos</span> / Salud</div>
+          <div class="ruta-carpeta" id="ruta-carpeta-actual"><span>Documentos</span> / ...</div>
           <table class="tabla-docs">
             <thead>
               <tr><th>Nombre</th><th>Subido por</th><th>Versión</th><th>Confidencialidad</th><th>Actualizado</th><th></th></tr>
@@ -1555,6 +1548,7 @@
     pintarUsuarioEnSidebar(datos);
     document.getElementById('pantalla-acceso').style.display = 'none';
     document.getElementById('app-completa').style.display = 'flex';
+    if (typeof construirListaCarpetas === 'function') construirListaCarpetas();
   }
 
   function mostrarErrorCodigo(mensaje) {
@@ -1692,6 +1686,7 @@
         pintarUsuarioEnSidebar(datos);
         document.getElementById('pantalla-acceso').style.display = 'none';
         document.getElementById('app-completa').style.display = 'flex';
+        if (typeof construirListaCarpetas === 'function') construirListaCarpetas();
       } catch (e) {}
     }
   });
@@ -1748,13 +1743,68 @@
   });
 
   // ============ DOCUMENTOS CONECTADOS A LA BASE DE DATOS Y AL ALMACÉN DE ARCHIVOS REAL ============
-  const nombresCarpetas = {
-    salud: 'Salud', actas: 'Actas de Reuniones CN-CPLP', planes: 'Planes Estratégicos CPLP',
-    circulares: 'Circulares del Secretariado', plantillas: 'Formatos y plantillas oficiales',
-    educacion: 'Educación', cultura: 'Cultura', agricultura: 'Agricultura'
-  };
-  let carpetaActual = 'salud';
+  // Carpetas: cada subcomité (27) tiene la suya propia (clave = letra), más una carpeta
+  // "Coordinación General" (clave = 'GENERAL'). El acceso se decide según usuarioActual:
+  //  - Coordinador Nacional (código empieza por "CN-"): ve y puede subir a TODAS las carpetas.
+  //  - Puntos Focales Nacionales / Enlace en Lisboa (usuarioActual.subcomite === 'GENERAL'):
+  //    solo ven la carpeta "Coordinación General".
+  //  - Coordinador Sectorial / Punto Focal / Punto Focal Adjunto: solo ven la carpeta de su
+  //    propio subcomité (usuarioActual.subcomite).
+  // Nota: esta restricción se aplica solo en pantalla (oculta lo que no corresponde), tal y
+  // como se decidió; no sustituye una restricción real a nivel de base de datos.
+  let nombresCarpetas = {};
+  let carpetasVisibles = [];
+  let carpetaActual = null;
   const CUBO_STORAGE = 'documentos';
+
+  async function construirListaCarpetas() {
+    const contenedor = document.getElementById('lista-carpetas-lateral');
+    contenedor.innerHTML = '<div style="text-align:center;color:var(--gris-texto);padding:14px 6px;font-size:13px;">Cargando carpetas...</div>';
+
+    const { data, error } = await db.from('Subcomites').select('letra,nombre').order('letra');
+    if (error) {
+      contenedor.innerHTML = '<div style="text-align:center;color:#D32B1E;padding:14px 6px;font-size:13px;">No se pudieron cargar las carpetas.</div>';
+      console.error(error);
+      return;
+    }
+
+    const nombresPorLetra = {};
+    (data || []).forEach(s => { if (!nombresPorLetra[s.letra]) nombresPorLetra[s.letra] = s.nombre; });
+
+    nombresCarpetas = { GENERAL: 'Coordinación General' };
+    Object.keys(nombresPorLetra).forEach(letra => {
+      nombresCarpetas[letra] = letra + '. ' + nombresPorLetra[letra];
+    });
+
+    const codigo = (usuarioActual && usuarioActual.codigo_acceso) || '';
+    const subcomiteUsuario = usuarioActual && usuarioActual.subcomite;
+
+    if (codigo.startsWith('CN-')) {
+      // Coordinador Nacional: todas las carpetas, Coordinación General primero.
+      carpetasVisibles = ['GENERAL'].concat(Object.keys(nombresPorLetra));
+    } else if (subcomiteUsuario === 'GENERAL') {
+      // Puntos Focales Nacionales / Enlace en Lisboa: solo Coordinación General.
+      carpetasVisibles = ['GENERAL'];
+    } else if (subcomiteUsuario && nombresPorLetra[subcomiteUsuario] !== undefined) {
+      // Coordinador Sectorial / Punto Focal / Punto Focal Adjunto: solo su propio subcomité.
+      carpetasVisibles = [subcomiteUsuario];
+    } else {
+      carpetasVisibles = [];
+    }
+
+    if (carpetasVisibles.length === 0) {
+      contenedor.innerHTML = '<div style="text-align:center;color:var(--gris-texto);padding:14px 6px;font-size:13px;">No tiene carpetas asignadas.</div>';
+      carpetaActual = null;
+      document.getElementById('tabla-docs-cuerpo').innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--gris-texto);padding:24px;">No tiene carpetas asignadas.</td></tr>';
+      return;
+    }
+
+    contenedor.innerHTML = carpetasVisibles.map((clave, i) =>
+      `<div class="carpeta-lateral${i === 0 ? ' activa' : ''}" data-carpeta="${clave}">📁 ${escaparHtml(nombresCarpetas[clave])}</div>`
+    ).join('');
+
+    pintarCarpeta(carpetasVisibles[0]);
+  }
 
   function formatearFechaHora(iso) {
     if (!iso) return '';
@@ -1798,12 +1848,12 @@
     }).join('');
   }
 
-  document.querySelectorAll('.carpeta-lateral').forEach(item => {
-    item.addEventListener('click', () => {
-      document.querySelectorAll('.carpeta-lateral').forEach(i => i.classList.remove('activa'));
-      item.classList.add('activa');
-      pintarCarpeta(item.dataset.carpeta);
-    });
+  document.getElementById('lista-carpetas-lateral').addEventListener('click', (e) => {
+    const item = e.target.closest('.carpeta-lateral');
+    if (!item) return;
+    document.querySelectorAll('.carpeta-lateral').forEach(i => i.classList.remove('activa'));
+    item.classList.add('activa');
+    pintarCarpeta(item.dataset.carpeta);
   });
 
   let archivoElegido = null;
@@ -1814,6 +1864,10 @@
   });
 
   function abrirModalDocumento() {
+    if (!carpetasVisibles || carpetasVisibles.length === 0) {
+      console.warn('El usuario no tiene carpetas de documentos asignadas.');
+      return;
+    }
     archivoElegido = null;
     document.getElementById('input-archivo-documento').value = '';
     document.getElementById('nombre-archivo-elegido').textContent = 'Ningún archivo seleccionado';
@@ -1823,7 +1877,7 @@
 
     const selector = document.getElementById('documento-carpeta');
     selector.innerHTML = '';
-    Object.keys(nombresCarpetas).forEach(clave => {
+    carpetasVisibles.forEach(clave => {
       const opt = document.createElement('option');
       opt.value = clave;
       opt.textContent = nombresCarpetas[clave];
@@ -1896,7 +1950,8 @@
     pintarCarpeta(carpeta);
   }
 
-  pintarCarpeta('salud');
+  // Nota: construirListaCarpetas() se llama después de iniciar sesión (ver script de
+  // acceso/registro), no aquí, porque necesita saber quién es usuarioActual.
 
   // ============ DIRECTORIO CONECTADO A LA BASE DE DATOS REAL ============
   let directorioCache = [];
