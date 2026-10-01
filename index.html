@@ -180,6 +180,28 @@
   .stat .num { font-family: 'Source Serif 4', serif; font-size: 27px; font-weight: 600; color: var(--marino); }
   .stat.alerta .num { color: var(--rojo-ge); }
   .stat .label { font-size: 12.5px; color: var(--gris-texto); margin-top: 2px; }
+  .stat.stat-clicable { cursor: pointer; transition: box-shadow 0.15s, transform 0.1s; }
+  .stat.stat-clicable:hover { box-shadow: 0 3px 14px rgba(10,46,82,0.12); transform: translateY(-1px); }
+
+  /* ---------- PANEL DE MANDO: ACCIONES RÁPIDAS Y GRÁFICO ---------- */
+  .acciones-rapidas { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 26px; }
+  .accion-rapida {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--blanco); border: 1px solid var(--gris-linea); border-radius: 7px;
+    padding: 13px 15px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--marino);
+    transition: box-shadow 0.15s, border-color 0.15s;
+  }
+  .accion-rapida:hover { box-shadow: 0 3px 14px rgba(10,46,82,0.09); border-color: #c9d3dc; }
+  .accion-rapida .icono-accion {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 7px; background: rgba(10,46,82,0.08); color: var(--marino); flex-shrink: 0;
+  }
+  .fila-barra-subcomite { display: flex; align-items: center; gap: 10px; padding: 7px 0; cursor: pointer; }
+  .fila-barra-subcomite:hover .nombre-barra-subcomite { color: var(--marino-claro); }
+  .nombre-barra-subcomite { font-size: 12px; color: var(--gris-texto); width: 160px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pista-barra-subcomite { flex: 1; height: 8px; background: var(--hueso); border-radius: 4px; overflow: hidden; }
+  .relleno-barra-subcomite { height: 100%; background: var(--verde-ge); border-radius: 4px; }
+  .cifra-barra-subcomite { font-size: 11.5px; color: var(--gris-texto); width: 46px; text-align: right; flex-shrink: 0; }
 
   .panel {
     background: var(--blanco);
@@ -296,6 +318,7 @@
     color: var(--marino);
     border-radius: 8px;
     margin-bottom: 14px;
+    font-size: 18px;
   }
   .tarjeta-documento-legal .titulo-legal { font-size: 15px; font-weight: 700; color: var(--marino); margin-bottom: 6px; font-family: 'Source Serif 4', Georgia, serif; }
   .tarjeta-documento-legal .desc-legal { font-size: 12.5px; color: var(--gris-texto); line-height: 1.5; margin-bottom: 16px; flex: 1; }
@@ -695,7 +718,7 @@
 
       <div class="campo-form">
         <label>Código de acceso</label>
-        <input type="text" placeholder="Ej. CN-001" id="input-codigo">
+        <input type="text" placeholder="Introduzca aquí su código" id="input-codigo">
         <div class="ayuda">Este código es personal e intransferible. Si no lo tiene, contacte con su Coordinador Sectorial.</div>
         <div id="error-codigo" style="display:none;color:#D32B1E;font-size:13px;margin-top:8px;font-weight:600;"></div>
       </div>
@@ -787,7 +810,7 @@
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       Subcomités
     </a>
-    <a class="item-nav" data-vista="directorio">
+    <a class="item-nav" data-vista="directorio" onclick="if (typeof quitarFiltroEstadoDirectorio === 'function') quitarFiltroEstadoDirectorio();">
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14a4.8 4.8 0 0 1 5 6"/></svg>
       Directorio
     </a>
@@ -811,11 +834,9 @@
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l8 4v2H4V7l8-4z"/><path d="M5 9v9M9 9v9M15 9v9M19 9v9"/><path d="M4 21h16"/></svg>
       Base Jurídica
     </a>
-
-    <div class="grupo-titulo">ADMINISTRACIÓN</div>
-    <a class="item-nav" href="https://www.cplp.org" target="_blank" rel="noopener">
+    <a class="item-nav" data-vista="enlacescplp">
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>
-      Página oficial de la CPLP
+      Enlaces CPLP
     </a>
   </nav>
 
@@ -891,10 +912,49 @@
     </div>
     <div class="contenido">
       <div class="resumen-grid">
-        <div class="stat"><div class="num" id="stat-subcomites">27</div><div class="label">Subcomités activos</div></div>
-        <div class="stat"><div class="num" id="stat-registrados">–</div><div class="label">Puntos focales registrados</div></div>
-        <div class="stat"><div class="num" id="stat-pendientes">–</div><div class="label">Puestos pendientes de registro</div></div>
-        <div class="stat"><div class="num" id="stat-proxima-reunion">–</div><div class="label">Próxima reunión ordinaria</div></div>
+        <div class="stat stat-clicable" onclick="activarVista('subcomites')" title="Ver todos los subcomités">
+          <div class="num" id="stat-subcomites">27</div><div class="label">Subcomités activos</div>
+        </div>
+        <div class="stat stat-clicable" onclick="irADirectorioFiltrado('registrados')" title="Ver quiénes están registrados">
+          <div class="num" id="stat-registrados">–</div><div class="label">Puntos focales registrados</div>
+        </div>
+        <div class="stat stat-clicable" onclick="irADirectorioFiltrado('pendientes')" title="Ver quién falta por registrarse">
+          <div class="num" id="stat-pendientes">–</div><div class="label">Puestos pendientes de registro</div>
+        </div>
+        <div class="stat stat-clicable" onclick="irAProximaReunion()" title="Ver en el calendario">
+          <div class="num" id="stat-proxima-reunion">–</div><div class="label">Próxima reunión ordinaria</div>
+        </div>
+      </div>
+
+      <div class="acciones-rapidas">
+        <div class="accion-rapida" onclick="accionRapidaDocumento()">
+          <span class="icono-accion"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></span>
+          Subir documento
+        </div>
+        <div class="accion-rapida" onclick="accionRapidaMensaje()">
+          <span class="icono-accion"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5c-1.4 0-2.7-.3-3.9-.9L3 21l1.9-5.6A8.5 8.5 0 1 1 21 11.5z"/></svg></span>
+          Enviar mensaje
+        </div>
+        <div class="accion-rapida" onclick="accionRapidaReunion()">
+          <span class="icono-accion"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span>
+          Nueva reunión
+        </div>
+        <div class="accion-rapida" onclick="accionRapidaMural()">
+          <span class="icono-accion"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="1.5"/><path d="M3 9h18M8 4v5"/></svg></span>
+          Publicar en el Mural
+        </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:26px;">
+        <div class="panel-header">
+          <h3>Avance del registro por subcomité</h3>
+          <span style="font-size:11.5px;color:var(--gris-texto);">Subcomités con más puestos pendientes · pulse uno para verlo en el Directorio</span>
+        </div>
+        <div class="cuerpo-scroll" style="max-height:280px;padding:14px 20px;">
+          <div id="grafico-registro-subcomites">
+            <div style="text-align:center;color:var(--gris-texto);padding:24px;">Cargando datos...</div>
+          </div>
+        </div>
       </div>
 
       <div class="panel">
@@ -932,6 +992,10 @@
       <input class="buscador" id="buscador-directorio" placeholder="Buscar por nombre o sector...">
     </div>
     <div class="contenido">
+      <div id="filtro-estado-directorio" style="display:none;margin-bottom:12px;font-size:12.5px;color:var(--marino);font-weight:600;">
+        <span id="filtro-estado-directorio-texto"></span>
+        <a href="#" onclick="quitarFiltroEstadoDirectorio();return false;" style="margin-left:8px;color:var(--marino-claro);font-weight:600;text-decoration:none;">Quitar filtro ✕</a>
+      </div>
       <div class="panel">
         <div class="cuerpo-scroll" style="max-height:640px;">
           <table class="tabla-directorio">
@@ -1175,6 +1239,144 @@
           <a class="btn-abrir" style="padding:9px 14px;" href="https://nxzyhxkzjrigzcwmvcqe.supabase.co/storage/v1/object/public/documentos/base-juridica/cuadro-bienal-cooperacion.pdf" target="_blank" rel="noopener">Leer documento</a>
         </div>
       </div>
+
+      <div class="panel" style="margin-top:28px;">
+        <div class="panel-header">
+          <h3>Documentos adicionales</h3>
+          <span style="font-size:12px;color:var(--gris-texto);font-weight:500;">Otros documentos oficiales subidos por la Coordinación Nacional</span>
+        </div>
+        <div style="padding:18px 20px;">
+          <div class="zona-subida" id="zona-subida-basejuridica" style="display:none;margin-bottom:18px;">
+            <input type="file" id="input-archivo-basejuridica" style="display:none" accept=".pdf" onchange="elegirArchivoBaseJuridica(event)">
+            <button class="btn-primario" onclick="document.getElementById('input-archivo-basejuridica').click()">Seleccionar documento (.pdf)</button>
+            <span id="nombre-archivo-basejuridica" style="display:inline-block;margin-left:10px;color:var(--gris-texto);font-size:13px;">Ningún archivo seleccionado</span>
+            <button class="btn-primario" id="btn-subir-basejuridica" onclick="subirDocumentoBaseJuridica()" style="margin-left:10px;" disabled>Subir</button>
+            <p>El documento quedará disponible para que cualquier punto focal lo lea desde esta pestaña.</p>
+            <div id="error-basejuridica" style="display:none;color:#D32B1E;font-size:13px;margin-top:8px;font-weight:600;"></div>
+          </div>
+          <div class="grid-base-juridica" id="lista-docs-basejuridica">
+            <p style="color:var(--gris-texto);font-size:13px;">Cargando documentos...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ENLACES CPLP ============ -->
+  <div class="vista" id="vista-enlacescplp">
+    <div class="topbar">
+      <div><h2>Enlaces CPLP</h2><div class="fecha">Acceso directo a los sitios oficiales de la Comunidad de los Países de Lengua Portuguesa</div></div>
+    </div>
+    <div class="contenido">
+      <p style="color:var(--gris-texto);font-size:13px;margin:-6px 0 20px;max-width:760px;">
+        No todos los 27 subcomités tienen todavía un sitio propio dentro de cplp.org: estos son los que sí lo tienen,
+        agrupados por el área con la que más se relacionan. Si el suyo no aparece, puede buscar la información de su
+        sector en la página oficial de la CPLP, al final de esta página.
+      </p>
+
+      <h3 style="font-size:14px;color:var(--marino);margin:0 0 12px;font-family:'Source Serif 4',Georgia,serif;">Portales por área de cooperación</h3>
+      <div class="grid-base-juridica" style="margin-bottom:30px;">
+        <div class="tarjeta-documento-legal">
+          <div class="icono-legal">🎭</div>
+          <div class="titulo-legal">Cultura</div>
+          <div class="desc-legal">Subcomité J · Cultura</div>
+          <a class="btn-abrir" style="padding:9px 14px;" href="https://cultura.cplp.org" target="_blank" rel="noopener">Abrir sitio</a>
+        </div>
+        <div class="tarjeta-documento-legal">
+          <div class="icono-legal">🛡️</div>
+          <div class="titulo-legal">Defensa</div>
+          <div class="desc-legal">Subcomité K · Defensa</div>
+          <a class="btn-abrir" style="padding:9px 14px;" href="https://defesa.cplp.org" target="_blank" rel="noopener">Abrir sitio</a>
+        </div>
+        <div class="tarjeta-documento-legal">
+          <div class="icono-legal">🎓</div>
+          <div class="titulo-legal">Educación</div>
+          <div class="desc-legal">Subcomité N · Educación</div>
+          <a class="btn-abrir" style="padding:9px 14px;" href="https://educacao.cplp.org" target="_blank" rel="noopener">Abrir sitio</a>
+        </div>
+        <div class="tarjeta-documento-legal">
+          <div class="icono-legal">🔬</div>
+          <div class="titulo-legal">Enseñanza Superior, Ciencia y Tecnología</div>
+          <div class="desc-legal">Subcomité F · Ciencia y Tecnología</div>
+          <a class="btn-abrir" style="padding:9px 14px;" href="https://esct.cplp.org" target="_blank" rel="noopener">Abrir sitio</a>
+        </div>
+        <div class="tarjeta-documento-legal">
+          <div class="icono-legal">⚽</div>
+          <div class="titulo-legal">Juventud y Deporte</div>
+          <div class="desc-legal">Subcomité L · Juventud y Deporte</div>
+          <a class="btn-abrir" style="padding:9px 14px;" href="https://juventudedesporto.cplp.org" target="_blank" rel="noopener">Abrir sitio</a>
+        </div>
+        <div class="tarjeta-documento-legal">
+          <div class="icono-legal">🌊</div>
+          <div class="titulo-legal">Océano</div>
+          <div class="desc-legal">Subcomité D · Asuntos del Mar</div>
+          <a class="btn-abrir" style="padding:9px 14px;" href="https://oceano.cplp.org" target="_blank" rel="noopener">Abrir sitio</a>
+        </div>
+        <div class="tarjeta-documento-legal">
+          <div class="icono-legal">🩺</div>
+          <div class="titulo-legal">Salud</div>
+          <div class="desc-legal">Subcomité V · Salud</div>
+          <a class="btn-abrir" style="padding:9px 14px;" href="https://saude.cplp.org" target="_blank" rel="noopener">Abrir sitio</a>
+        </div>
+        <div class="tarjeta-documento-legal">
+          <div class="icono-legal">🏝️</div>
+          <div class="titulo-legal">Turismo</div>
+          <div class="desc-legal">Subcomité X · Turismo</div>
+          <a class="btn-abrir" style="padding:9px 14px;" href="https://turismo.cplp.org" target="_blank" rel="noopener">Abrir sitio</a>
+        </div>
+        <div class="tarjeta-documento-legal">
+          <div class="icono-legal">🌾</div>
+          <div class="titulo-legal">Seguridad Alimentaria y Nutricional</div>
+          <div class="desc-legal">Relacionado con el Subcomité C · Agricultura</div>
+          <a class="btn-abrir" style="padding:9px 14px;" href="https://san.cplp.org" target="_blank" rel="noopener">Abrir sitio</a>
+        </div>
+        <div class="tarjeta-documento-legal">
+          <div class="icono-legal">💹</div>
+          <div class="titulo-legal">Cooperación Económica</div>
+          <div class="desc-legal">Comercio, empresa y finanzas · Subcomités G, M y P</div>
+          <a class="btn-abrir" style="padding:9px 14px;" href="https://coop-economica.cplp.org" target="_blank" rel="noopener">Abrir sitio</a>
+        </div>
+        <div class="tarjeta-documento-legal">
+          <div class="icono-legal">🧒</div>
+          <div class="titulo-legal">Trabajo Infantil</div>
+          <div class="desc-legal">Relacionado con el Subcomité W · Trabajo y Asuntos Sociales</div>
+          <a class="btn-abrir" style="padding:9px 14px;" href="https://trabalhoinfantil.cplp.org" target="_blank" rel="noopener">Abrir sitio</a>
+        </div>
+        <div class="tarjeta-documento-legal">
+          <div class="icono-legal">🛃</div>
+          <div class="titulo-legal">Aduanas</div>
+          <div class="desc-legal">Relacionado con el Subcomité G · Comercio</div>
+          <a class="btn-abrir" style="padding:9px 14px;" href="https://alfandegas.cplp.org" target="_blank" rel="noopener">Abrir sitio</a>
+        </div>
+      </div>
+
+      <h3 style="font-size:14px;color:var(--marino);margin:0 0 12px;font-family:'Source Serif 4',Georgia,serif;">Instituciones y portales generales</h3>
+      <div class="grid-base-juridica">
+        <div class="tarjeta-documento-legal">
+          <div class="icono-legal">🌐</div>
+          <div class="titulo-legal">Página oficial de la CPLP</div>
+          <div class="desc-legal">Sitio institucional general, con noticias, documentos y agenda de toda la organización.</div>
+          <a class="btn-abrir" style="padding:9px 14px;" href="https://www.cplp.org" target="_blank" rel="noopener">Abrir sitio</a>
+        </div>
+        <div class="tarjeta-documento-legal">
+          <div class="icono-legal">🏛️</div>
+          <div class="titulo-legal">Secretariado Ejecutivo</div>
+          <div class="desc-legal">Órgano permanente que coordina y ejecuta las decisiones de la CPLP.</div>
+          <a class="btn-abrir" style="padding:9px 14px;" href="https://secretariadoexecutivo.cplp.org" target="_blank" rel="noopener">Abrir sitio</a>
+        </div>
+        <div class="tarjeta-documento-legal">
+          <div class="icono-legal">🗣️</div>
+          <div class="titulo-legal">Instituto Internacional de la Lengua Portuguesa</div>
+          <div class="desc-legal">IILP · promoción y defensa de la lengua portuguesa entre los Estados miembro.</div>
+          <a class="btn-abrir" style="padding:9px 14px;" href="https://iilp.cplp.org" target="_blank" rel="noopener">Abrir sitio</a>
+        </div>
+        <div class="tarjeta-documento-legal">
+          <div class="icono-legal">📚</div>
+          <div class="titulo-legal">Centro de Documentación (CDOC)</div>
+          <div class="desc-legal">Archivo documental histórico de la CPLP.</div>
+          <a class="btn-abrir" style="padding:9px 14px;" href="https://cdoc.cplp.org/PacWeb_v4/" target="_blank" rel="noopener">Abrir sitio</a>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1231,6 +1433,7 @@
     document.getElementById('app-completa').style.display = 'flex';
     if (typeof construirListaCarpetas === 'function') construirListaCarpetas();
     if (typeof construirListaGruposChat === 'function') construirListaGruposChat();
+    if (typeof cargarDocumentosBaseJuridica === 'function') cargarDocumentosBaseJuridica();
   }
 
   function mostrarErrorCodigo(mensaje) {
@@ -1473,6 +1676,7 @@
         document.getElementById('app-completa').style.display = 'flex';
         if (typeof construirListaCarpetas === 'function') construirListaCarpetas();
         if (typeof construirListaGruposChat === 'function') construirListaGruposChat();
+        if (typeof cargarDocumentosBaseJuridica === 'function') cargarDocumentosBaseJuridica();
       } catch (e) {}
     }
   });
@@ -2081,10 +2285,35 @@
     return grupo + '|' + letra + '|' + prioridad + '|' + p.codigo_acceso;
   }
 
+  let filtroEstadoDirectorio = 'todos'; // 'todos' | 'registrados' | 'pendientes', activado desde el Panel de Mando
+
+  function quitarFiltroEstadoDirectorio() {
+    filtroEstadoDirectorio = 'todos';
+    document.getElementById('filtro-estado-directorio').style.display = 'none';
+    pintarDirectorio(document.getElementById('buscador-directorio').value);
+  }
+
+  function irADirectorioFiltrado(estado) {
+    filtroEstadoDirectorio = estado;
+    const el = document.getElementById('filtro-estado-directorio');
+    const elTexto = document.getElementById('filtro-estado-directorio-texto');
+    if (el && elTexto) {
+      elTexto.textContent = estado === 'registrados'
+        ? 'Mostrando solo puntos focales registrados.'
+        : 'Mostrando solo puestos pendientes de registro.';
+      el.style.display = 'block';
+    }
+    activarVista('directorio');
+    pintarDirectorio(document.getElementById('buscador-directorio').value);
+  }
+
   function pintarDirectorio(filtro) {
     const cuerpo = document.getElementById('tabla-directorio-cuerpo');
     const texto = (filtro || '').trim().toLowerCase();
     const filas = directorioCache.filter(p => {
+      const registrado = p.nombre_completo && p.nombre_completo.trim() !== '';
+      if (filtroEstadoDirectorio === 'registrados' && !registrado) return false;
+      if (filtroEstadoDirectorio === 'pendientes' && registrado) return false;
       if (!texto) return true;
       const nombreSub = p.subcomite === 'GENERAL' ? 'coordinación general' : (nombresSubcomitesDirectorio[p.subcomite] || p.subcomite || '');
       return (p.nombre_completo || '').toLowerCase().includes(texto) ||
@@ -3085,6 +3314,101 @@
         elReunion.textContent = 'Ninguna';
       }
     }
+
+    pintarGraficoRegistroSubcomites();
+  }
+
+  // ============ PANEL DE MANDO: GRÁFICO DE AVANCE POR SUBCOMITÉ ============
+  function pintarGraficoRegistroSubcomites() {
+    const cont = document.getElementById('grafico-registro-subcomites');
+    if (!cont) return;
+    if (!directorioCache.length || !Object.keys(subcomitesDetalleCache).length) return;
+
+    // Para cada subcomité (letra), cuenta cuántos de sus puestos (Punto Focal Sectorial y
+    // Adjunto, código "PF-") están registrados frente al total de puestos que tiene.
+    const porSubcomite = {};
+    directorioCache.forEach(p => {
+      const letra = p.subcomite;
+      if (!letra || letra === 'GENERAL' || !subcomitesDetalleCache[letra]) return;
+      if (!porSubcomite[letra]) porSubcomite[letra] = { total: 0, registrados: 0 };
+      porSubcomite[letra].total++;
+      if (p.nombre_completo && p.nombre_completo.trim() !== '') porSubcomite[letra].registrados++;
+    });
+
+    const filas = Object.keys(porSubcomite).map(letra => {
+      const d = porSubcomite[letra];
+      return {
+        letra: letra,
+        nombre: (subcomitesDetalleCache[letra] && subcomitesDetalleCache[letra].nombre) || letra,
+        total: d.total,
+        registrados: d.registrados,
+        porcentaje: d.total ? Math.round((d.registrados / d.total) * 100) : 0
+      };
+    });
+
+    // Los que tienen más puestos pendientes primero, para llamar la atención sobre ellos.
+    filas.sort((a, b) => (a.total - a.registrados) !== (b.total - b.registrados)
+      ? (b.total - b.registrados) - (a.total - a.registrados)
+      : a.letra.localeCompare(b.letra));
+
+    if (filas.length === 0) {
+      cont.innerHTML = '<p style="color:var(--gris-texto);font-size:13px;">No hay datos de subcomités todavía.</p>';
+      return;
+    }
+
+    cont.innerHTML = filas.map(f => `
+      <div class="fila-barra-subcomite" onclick="irADirectorioFiltradoPorSubcomite('${f.letra}')" title="Ver ${escaparHtml(f.nombre)} en el Directorio">
+        <div class="nombre-barra-subcomite">${f.letra}. ${escaparHtml(f.nombre)}</div>
+        <div class="pista-barra-subcomite"><div class="relleno-barra-subcomite" style="width:${f.porcentaje}%;"></div></div>
+        <div class="cifra-barra-subcomite">${f.registrados}/${f.total}</div>
+      </div>
+    `).join('');
+  }
+
+  function irADirectorioFiltradoPorSubcomite(letra) {
+    filtroEstadoDirectorio = 'todos';
+    document.getElementById('filtro-estado-directorio').style.display = 'none';
+    activarVista('directorio');
+    const input = document.getElementById('buscador-directorio');
+    const nombreSub = (subcomitesDetalleCache[letra] && subcomitesDetalleCache[letra].nombre) || letra;
+    input.value = nombreSub;
+    pintarDirectorio(nombreSub);
+  }
+
+  // ============ PANEL DE MANDO: ACCESOS DIRECTOS A ACCIONES ============
+  function accionRapidaDocumento() {
+    activarVista('documentos');
+    setTimeout(() => { if (typeof abrirModalDocumento === 'function') abrirModalDocumento(); }, 60);
+  }
+
+  function accionRapidaMensaje() {
+    activarVista('mensajes');
+  }
+
+  function accionRapidaReunion() {
+    if (typeof abrirModalReunion === 'function') abrirModalReunion();
+  }
+
+  function accionRapidaMural() {
+    activarVista('muro');
+    setTimeout(() => {
+      const t = document.getElementById('texto-nueva-publicacion');
+      if (t) t.focus();
+    }, 60);
+  }
+
+  function irAProximaReunion() {
+    if (!reunionesCache || !reunionesCache.length) { activarVista('calendario'); return; }
+    const hoyISO = new Date().toISOString().slice(0, 10);
+    const proxima = reunionesCache.filter(r => r.fecha >= hoyISO).sort((a, b) => a.fecha < b.fecha ? -1 : 1)[0];
+    if (proxima) {
+      const f = parsearFecha(proxima.fecha);
+      mesActual = f.mes;
+      anioActual = f.anio;
+      if (typeof pintarMes === 'function') pintarMes();
+      if (typeof actualizarSelectorMes === 'function') actualizarSelectorMes();
+    }
+    activarVista('calendario');
   }
 
   const elFechaPanel = document.getElementById('fecha-panel-mando');
@@ -3095,6 +3419,154 @@
 
   cargarActividadReciente();
   setInterval(cargarActividadReciente, 25000);
+
+  // ============ BASE JURÍDICA: DOCUMENTOS ADICIONALES ============
+  // Reutiliza la tabla "documentos" y el mismo cubo de almacenamiento que la pestaña
+  // Documentos, con subcomite = 'BASE-JURIDICA'. Solo el Coordinador Nacional (código "CN-")
+  // puede subir o borrar; cualquier punto focal puede leerlos. Restricción solo en pantalla,
+  // igual que el resto de permisos de esta plataforma.
+  let archivoElegidoBaseJuridica = null;
+  const CARPETA_BASE_JURIDICA = 'BASE-JURIDICA';
+
+  function esCoordinadorNacional() {
+    const codigo = (usuarioActual && usuarioActual.codigo_acceso) || '';
+    return codigo.startsWith('CN-');
+  }
+
+  function elegirArchivoBaseJuridica(event) {
+    const archivo = event.target.files && event.target.files[0];
+    const errorEl = document.getElementById('error-basejuridica');
+    errorEl.style.display = 'none';
+    if (!archivo) { return; }
+    if (archivo.type !== 'application/pdf' && !archivo.name.toLowerCase().endsWith('.pdf')) {
+      errorEl.textContent = 'Solo se admiten archivos en formato PDF.';
+      errorEl.style.display = 'block';
+      archivoElegidoBaseJuridica = null;
+      document.getElementById('nombre-archivo-basejuridica').textContent = 'Ningún archivo seleccionado';
+      document.getElementById('btn-subir-basejuridica').disabled = true;
+      return;
+    }
+    archivoElegidoBaseJuridica = archivo;
+    document.getElementById('nombre-archivo-basejuridica').textContent = archivo.name;
+    document.getElementById('btn-subir-basejuridica').disabled = false;
+  }
+
+  async function subirDocumentoBaseJuridica() {
+    const errorEl = document.getElementById('error-basejuridica');
+    errorEl.style.display = 'none';
+    if (!archivoElegidoBaseJuridica) {
+      errorEl.textContent = 'Por favor, seleccione un archivo PDF.';
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    const nombreQuienSube = (usuarioActual && (usuarioActual.nombre_completo || usuarioActual.rol)) || 'Usuario CN-CPLP';
+    const rolQuienSube = (usuarioActual && typeof etiquetaRol === 'function') ? etiquetaRol(usuarioActual.codigo_acceso || '') : '';
+    const subidoPor = rolQuienSube ? (nombreQuienSube + ' (' + rolQuienSube + ')') : nombreQuienSube;
+
+    const btn = document.getElementById('btn-subir-basejuridica');
+    btn.textContent = 'Subiendo...';
+    btn.disabled = true;
+
+    const rutaArchivo = CARPETA_BASE_JURIDICA + '/' + Date.now() + '_' + archivoElegidoBaseJuridica.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+
+    const { error: errorSubida } = await db.storage.from(CUBO_STORAGE).upload(rutaArchivo, archivoElegidoBaseJuridica);
+    if (errorSubida) {
+      btn.textContent = 'Subir';
+      btn.disabled = false;
+      errorEl.textContent = 'No se pudo subir el archivo. Compruebe su conexión e inténtelo de nuevo.';
+      errorEl.style.display = 'block';
+      console.error(errorSubida);
+      return;
+    }
+
+    const { data: urlPublica } = db.storage.from(CUBO_STORAGE).getPublicUrl(rutaArchivo);
+
+    const { error: errorInsercion } = await db.from('documentos').insert({
+      nombre_archivo: archivoElegidoBaseJuridica.name,
+      subcomite: CARPETA_BASE_JURIDICA,
+      subido_por: subidoPor,
+      version: 'v1',
+      confidencialidad: 'publico',
+      url_archivo: urlPublica.publicUrl
+    });
+
+    btn.textContent = 'Subir';
+    btn.disabled = true;
+    archivoElegidoBaseJuridica = null;
+    document.getElementById('input-archivo-basejuridica').value = '';
+    document.getElementById('nombre-archivo-basejuridica').textContent = 'Ningún archivo seleccionado';
+
+    if (errorInsercion) {
+      errorEl.textContent = 'El archivo se subió, pero no se pudo guardar su información. Contacte con soporte.';
+      errorEl.style.display = 'block';
+      console.error(errorInsercion);
+      return;
+    }
+
+    cargarDocumentosBaseJuridica();
+  }
+
+  async function borrarDocumentoBaseJuridica(id, urlArchivo) {
+    if (!confirm('¿Seguro que desea borrar este documento? Esta acción no se puede deshacer.')) return;
+    try {
+      const partes = urlArchivo.split('/documentos/');
+      const ruta = partes[1];
+      if (ruta) {
+        const { error: errorAlmacen } = await db.storage.from(CUBO_STORAGE).remove([ruta]);
+        if (errorAlmacen) console.error(errorAlmacen);
+      }
+    } catch (e) { console.error(e); }
+
+    const { error } = await db.from('documentos').delete().eq('id', id);
+    if (error) {
+      alert('No se pudo borrar el documento. Inténtelo de nuevo.');
+      console.error(error);
+      return;
+    }
+    cargarDocumentosBaseJuridica();
+  }
+
+  function pintarDocumentosBaseJuridica(lista) {
+    const cont = document.getElementById('lista-docs-basejuridica');
+    if (!cont) return;
+    if (!lista || lista.length === 0) {
+      cont.innerHTML = '<p style="color:var(--gris-texto);font-size:13px;">Todavía no se ha subido ningún documento adicional.</p>';
+      return;
+    }
+    const puedeBorrar = esCoordinadorNacional();
+    cont.innerHTML = lista.map(doc => {
+      const fecha = doc.created_at ? new Date(doc.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+      return `
+        <div class="tarjeta-documento-legal">
+          <div class="icono-legal"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h10l6 6v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M14 4v6h6"/></svg></div>
+          <div class="titulo-legal">${escaparHtml(doc.nombre_archivo)}</div>
+          <div class="desc-legal">Subido por ${escaparHtml(doc.subido_por || 'Coordinación Nacional')}${fecha ? ' · ' + fecha : ''}</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <a class="btn-abrir" style="padding:9px 14px;" href="${doc.url_archivo}" target="_blank" rel="noopener">Leer documento</a>
+            ${puedeBorrar ? `<button class="btn-primario" style="padding:9px 12px;background:#D32B1E;" onclick="borrarDocumentoBaseJuridica(${doc.id}, '${doc.url_archivo}')" title="Borrar">🗑</button>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  async function cargarDocumentosBaseJuridica() {
+    const zonaSubida = document.getElementById('zona-subida-basejuridica');
+    if (zonaSubida) zonaSubida.style.display = esCoordinadorNacional() ? 'block' : 'none';
+
+    const { data, error } = await db.from('documentos')
+      .select('id,nombre_archivo,subido_por,url_archivo,created_at')
+      .eq('subcomite', CARPETA_BASE_JURIDICA)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error(error);
+      const cont = document.getElementById('lista-docs-basejuridica');
+      if (cont) cont.innerHTML = '<p style="color:#D32B1E;font-size:13px;">No se pudieron cargar los documentos.</p>';
+      return;
+    }
+    pintarDocumentosBaseJuridica(data || []);
+  }
 
   // ============ BUSCADOR GLOBAL DEL PANEL DE MANDO ============
   // Busca a la vez entre las personas (Directorio), los subcomités y los documentos
