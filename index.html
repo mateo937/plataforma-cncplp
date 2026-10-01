@@ -2177,7 +2177,13 @@
     if (typeof documentosCarpetaCache !== 'undefined' && documentosCarpetaCache.length && typeof pintarFilasDocumentos === 'function') pintarFilasDocumentos(documentosCarpetaCache);
   }
 
-  document.addEventListener('DOMContentLoaded', aplicarIdioma);
+  // Nota: no se vuelve a enganchar aplicarIdioma() al evento DOMContentLoaded. Ese evento
+  // se dispara DESPUÉS de que el segundo bloque <script> (más abajo) ya haya calculado y
+  // escrito la fecha real en "fecha-panel-mando"; si aplicarIdioma() se repitiera en ese
+  // momento, volvería a pisar la fecha con el texto de "Cargando fecha..." para siempre,
+  // porque ese elemento también lleva data-i18n. Con esta única llamada de aquí abajo basta:
+  // en este punto del análisis del documento, todo el HTML estático (con sus data-i18n) ya
+  // existe en la página, así que la traducción inicial se aplica correctamente igualmente.
   aplicarIdioma();
 
   let filaActual = null;
